@@ -920,7 +920,7 @@ function App() {
                 <div className="form-group"><label>CPF *:</label><input type="text" value={regCpf} onChange={e => setRegCpf(e.target.value)} placeholder="000.000.000-00" required /></div>
                 <div className="form-group"><label>E-mail *:</label><input type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="seu@email.com" required /></div>
                 <div className="form-row-phone">
-                  <div className="form-group" style={{flex: 1}}><label>Área:</label><input type="text" value="55 - Brasil" readOnly style={{background: '#f1f5f9'}} /></div>
+                  <div className="form-group" style={{flex: 1}}><label>Área:</label><input type="text" value="55 - Brasil" readOnly style={{background: '#1b1e26', color: '#94a3b8', border: '1px solid #334155'}} /></div>
                   <div className="form-group" style={{flex: 2}}><label>Telefone *:</label><input type="text" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="(99) 99999-9999" required /></div>
                 </div>
                 <div className="form-group"><label>Usuário *:</label><input type="text" value={regUser} onChange={e => setRegUser(e.target.value)} placeholder="Ex: JogadorDaSorte 🍀" required /></div>

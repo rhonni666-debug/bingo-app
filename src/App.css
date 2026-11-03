@@ -304,3 +304,9 @@
   accent-color: #16a34a;
   cursor: pointer;
 }
+/* Linha com Área e Telefone lado a lado */
+.auth-form-card .form-row-phone {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 11px;
+}
