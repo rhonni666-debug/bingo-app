@@ -2,8 +2,9 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { io } from 'socket.io-client';
 
-const socket = io('http://localhost:3001');
-
+const socket = io('https://bingo-app-10i4.onrender.com', {
+  transports: ['websocket', 'polling']
+});
 const REAL_PLAYERS_POOL = [
   'MARFM69', 'Edvardo', 'KEKEL', 'ALESANTANA72', 'EUSOUASORTE',
   'CTCSU', 'JOAO_BR', 'LUCKY_77', 'TIZIL', 'gaviao78', 'Zilma',
