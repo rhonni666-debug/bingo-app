@@ -16,8 +16,8 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVe
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function App() {
-  // ROTA DO PAINEL SECRETO (acessível via /admin-secreto)
-  if (typeof window !== 'undefined' && window.location.pathname === '/admin-secreto') {
+  // ROTA DO PAINEL SECRETO (aceita tanto por URL direta quanto por #admin)
+  if (typeof window !== 'undefined' && (window.location.pathname === '/admin-secreto' || window.location.hash === '#admin')) {
     return <AdminPanel />;
   }
 
