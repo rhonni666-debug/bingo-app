@@ -923,7 +923,7 @@ function App() {
                   <div className="form-group" style={{flex: 1}}><label>Área:</label><input type="text" value="55 - Brasil" readOnly style={{background: '#f1f5f9'}} /></div>
                   <div className="form-group" style={{flex: 2}}><label>Telefone *:</label><input type="text" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="(99) 99999-9999" required /></div>
                 </div>
-                <div className="form-group"><label>Usuário *:</label><input type="text" value={regUser} onChange={e => setRegUser(e.target.value)} placeholder="Ex: RHONNI 🍀" required /></div>
+                <div className="form-group"><label>Usuário *:</label><input type="text" value={regUser} onChange={e => setRegUser(e.target.value)} placeholder="Ex: JogadorDaSorte 🍀" required /></div>
                 <div className="form-group"><label>Senha *:</label><input type="password" value={regPass} onChange={e => setRegPass(e.target.value)} placeholder="******" required minLength="6" /></div>
                 <div className="form-group"><label>Confirmar Senha *:</label><input type="password" value={regPassConfirm} onChange={e => setRegPassConfirm(e.target.value)} placeholder="******" required minLength="6" /></div>
                 
