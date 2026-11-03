@@ -37,7 +37,7 @@ let estadoGlobal = {
     kuadra: 15.00,
     kina: 15.00,
     keno: 40.00,
-    acumulado: 100.00,
+    acumulado: 100.00, // Base fixa de R$ 100,00 que cresce com as vendas
     bolaAcumulado: 36
   }
 };
@@ -71,6 +71,12 @@ function resetarParaLobby() {
   estadoGlobal.pedraAtual = null;
   estadoGlobal.sorteioNum = Math.floor(120000 + Math.random() * 900);
   estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
+  
+  // Reseta os prêmios base para o próximo sorteio mantendo o Acumulado
+  estadoGlobal.premios.kuadra = 15.00;
+  estadoGlobal.premios.kina = 15.00;
+  estadoGlobal.premios.keno = 40.00;
+  estadoGlobal.totalCartelasVendidas = 0;
   
   io.emit('estado-jogo', estadoGlobal);
 }
@@ -198,7 +204,7 @@ app.post('/api/pix', async (req, res) => {
     // --- SALVA A ENTRADA NA MEMÓRIA DO ADMIN ---
     const novaEntrada = { id: idLocal, amount: valorFinal, status: 'Gerado', hora: new Date().toLocaleTimeString('pt-BR') };
     historicoEntradas.unshift(novaEntrada);
-    if(historicoEntradas.length > 50) historicoEntradas.pop(); // Mantém apenas os últimos 50
+    if(historicoEntradas.length > 50) historicoEntradas.pop();
     io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
     // -------------------------------------------
 
@@ -266,6 +272,28 @@ io.on('connection', (socket) => {
 
   socket.on('reset-game', () => {
     resetarParaLobby();
+  });
+
+  // --- DISTRIBUIÇÃO DAS VENDAS DE CARTELAS ---
+  socket.on('comprar-cartelas', (dados) => {
+    const quantidade = Number(dados?.quantidade || 0);
+    const valorGasto = Number(dados?.valorTotal || 0);
+
+    if (valorGasto > 0) {
+      // 40% Bingo | 15% Quadra | 15% Quina | 5% Acumulado | 25% Margem da Casa
+      const incrementoBingo = valorGasto * 0.40;
+      const incrementoQuadra = valorGasto * 0.15;
+      const incrementoQuina = valorGasto * 0.15;
+      const incrementoAcumulado = valorGasto * 0.05;
+
+      estadoGlobal.premios.keno += incrementoBingo;
+      estadoGlobal.premios.kuadra += incrementoQuadra;
+      estadoGlobal.premios.kina += incrementoQuina;
+      estadoGlobal.premios.acumulado += incrementoAcumulado;
+      estadoGlobal.totalCartelasVendidas += quantidade;
+
+      io.emit('estado-jogo', estadoGlobal);
+    }
   });
 
   // --- COMANDOS DO PAINEL ADMIN ---

@@ -914,7 +914,7 @@ function App() {
             <div className="auth-form-card">
               <div className="auth-modal-top">
                 <h2>CRIAR CONTA</h2>
-                <button onClick={() => setActiveModalView('NONE')} type="button"><X size={22}/></button>
+                <button onClick={() => setActiveModalView('NONE')} type="button" className="auth-close-btn">✕</button>
               </div>
               <form onSubmit={handleRegisterSubmit}>
                 <div className="form-group"><label>CPF *:</label><input type="text" value={regCpf} onChange={e => setRegCpf(e.target.value)} placeholder="000.000.000-00" required /></div>

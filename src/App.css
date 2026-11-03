@@ -182,3 +182,125 @@
     border-right-color: var(--border);
   }
 }
+
+/* Fundo escuro cobrindo a tela */
+.bds-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+
+/* Card central do modal no estilo escuro e dourado */
+.auth-form-card {
+  background: #111318;
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 14px;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+  color: #f8fafc;
+  box-sizing: border-box;
+}
+
+/* Barra superior: Título e X alinhados perfeitamente */
+.auth-modal-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+}
+
+.auth-modal-top h2 {
+  margin: 0;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #facc15;
+  letter-spacing: 0.5px;
+}
+
+/* Botão de Fechar estilizado */
+.auth-close-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.auth-close-btn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: #ef4444;
+  color: #ef4444;
+}
+
+/* Labels e grupos de campos */
+.auth-form-card .form-group {
+  margin-bottom: 11px;
+  display: flex;
+  flex-direction: column;
+}
+
+.auth-form-card label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 4px;
+}
+
+/* Inputs em fundo grafite escuro */
+.auth-form-card input[type="text"],
+.auth-form-card input[type="email"],
+.auth-form-card input[type="password"] {
+  background: #1b1e26 !important;
+  border: 1px solid #334155 !important;
+  border-radius: 8px !important;
+  padding: 10px 12px !important;
+  color: #ffffff !important;
+  font-size: 0.9rem !important;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.auth-form-card input::placeholder {
+  color: #64748b !important;
+}
+
+.auth-form-card input:focus {
+  border-color: #facc15 !important;
+  box-shadow: 0 0 0 1px #facc15;
+}
+
+/* Checkbox dos Termos */
+.form-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+  margin-bottom: 8px;
+  font-size: 0.82rem;
+  color: #94a3b8;
+}
+
+.form-checkbox-row input {
+  accent-color: #16a34a;
+  cursor: pointer;
+}

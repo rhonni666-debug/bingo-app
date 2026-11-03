@@ -9,6 +9,8 @@ const REAL_PLAYERS_POOL = [
   'MARFM69', 'Edvardo', 'KEKEL', 'ALESANTANA72', 'EUSOUASORTE',
   'CTCSU', 'JOAO_BR', 'LUCKY_77', 'TIZIL', 'gaviao78', 'Zilma',
   'Lú', 'S20ATIVADO', 'TÂNIA', 'NENE1410', 'Bugdoidao', 'RENATA'
+  'Lula22','abertojose25@gmail.com','finindatarde','244Nike'
+  'vidarasa22','Ronyn','vanessalopes'
 ];
 
 // Instâncias globais de áudio
