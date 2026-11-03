@@ -7,12 +7,20 @@ import HowToPlayModal from './components/HowToPlayModal';
 import { useBingoGame } from './hooks/useBingoGame';
 import { X, LogOut, User, DollarSign, Menu, HelpCircle, Wallet, Grid } from 'lucide-react';
 
+// IMPORTAÇÃO DO PAINEL DE ADMINISTRAÇÃO SECRETO
+import AdminPanel from './AdminPanel';
+
 // IMPORTAÇÕES DO FIREBASE
 import { auth, db } from './firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function App() {
+  // ROTA DO PAINEL SECRETO (acessível via /admin-secreto)
+  if (typeof window !== 'undefined' && window.location.pathname === '/admin-secreto') {
+    return <AdminPanel />;
+  }
+
   const {
     currentUser, setCurrentUser, cards, drawnNumbers, betAmount, ticketQty, sorteioNum, sorteioHoraInicio,
     gameState, timeRemaining, currentTarget, prizes, winnersList, leaderboard,
@@ -352,7 +360,6 @@ function App() {
         .m90-called { color: #4ade80 !important; opacity: 1 !important; font-weight: 900 !important; text-shadow: 0 0 8px rgba(74, 222, 128, 0.85) !important; }
         .m90-current { color: #f87171 !important; opacity: 1 !important; font-weight: 900 !important; text-shadow: 0 0 10px rgba(248, 113, 113, 1) !important; transform: scale(1.12); }
 
-        /* FAIXA DOURADA RIGOROSAMENTE ALINHADA COM GRELHA SIMÉTRICA */
         .bds-order-strip {
           background: linear-gradient(180deg, #fde047 0%, #eab308 45%, #a16207 100%) !important;
           border: 1px solid #fef9c3 !important;
@@ -728,7 +735,6 @@ function App() {
               </div>
             </div>
 
-            {/* FAIXA DOURADA RIGOROSAMENTE ALINHADA COM GRELHA SIMÉTRICA */}
             <div className="bds-order-strip">
               <div className="os-col">
                 <span className="os-label">Sorteio</span>

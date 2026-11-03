@@ -19,6 +19,11 @@ const io = new Server(server, {
   }
 });
 
+// --- SISTEMA DE MEMÓRIA DO ADMIN ---
+let historicoSaques = [];
+let historicoEntradas = [];
+// -----------------------------------
+
 let estadoGlobal = {
   gameState: 'WAITING',
   timeRemaining: 180,
@@ -67,7 +72,6 @@ function resetarParaLobby() {
   estadoGlobal.sorteioNum = Math.floor(120000 + Math.random() * 900);
   estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
   
-  console.log(`🔄 [SALA REINICIADA] Novo Sorteio #${estadoGlobal.sorteioNum} iniciando contagem de 180s`);
   io.emit('estado-jogo', estadoGlobal);
 }
 
@@ -78,8 +82,6 @@ function encerrarPartidaPorBingo(vencedores) {
   }
   if (timeoutPausa) clearTimeout(timeoutPausa);
   sorteioPausado = false;
-  
-  console.log(`🎉 [BINGO CONFIRMADO!] O sorteio foi travado. Aguardando comemoração (6.5s) e quadro de resumo (10s) para voltar ao lobby.`);
   
   if (!resetTimeout) {
     resetTimeout = setTimeout(() => {
@@ -100,7 +102,6 @@ function iniciarSorteioCentral() {
   estadoGlobal.drawnNumbers = [];
   estadoGlobal.pedraAtual = null;
   
-  console.log(`▶️ [SORTEIO INICIADO] Começando a extração de pedras do Sorteio #${estadoGlobal.sorteioNum}`);
   io.emit('estado-jogo', estadoGlobal);
 
   drawLoop = setInterval(() => {
@@ -194,6 +195,13 @@ app.post('/api/pix', async (req, res) => {
     const idLocal = `PIX${Date.now().toString().slice(-6)}`;
     const brCode = gerarPixBancoCentral(MINHA_CHAVE_PIX, valorFinal, idLocal);
 
+    // --- SALVA A ENTRADA NA MEMÓRIA DO ADMIN ---
+    const novaEntrada = { id: idLocal, amount: valorFinal, status: 'Gerado', hora: new Date().toLocaleTimeString('pt-BR') };
+    historicoEntradas.unshift(novaEntrada);
+    if(historicoEntradas.length > 50) historicoEntradas.pop(); // Mantém apenas os últimos 50
+    io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
+    // -------------------------------------------
+
     return res.status(200).json({
       id: idLocal,
       status: 'pending',
@@ -213,21 +221,24 @@ const tratarSolicitacaoSaque = (req, res) => {
       return res.status(400).json({ error: 'Dados incompletos para o saque.' });
     }
 
-    console.log('\n=========================================');
-    console.log('🚨 NOVA SOLICITAÇÃO DE SAQUE (PRAZO: 15 MIN) 🚨');
-    console.log(`👤 Jogador: ${nome || 'Anônimo'} (ID: ${uid || 'N/A'})`);
-    console.log(`💰 Valor a pagar: R$ ${Number(valor).toFixed(2)}`);
-    console.log(`🔑 Tipo de Chave: ${(tipoChave || 'PIX').toUpperCase()}`);
-    console.log(`📋 Chave Pix: ${chavePix}`);
-    console.log(`⏰ Horário do pedido: ${new Date().toLocaleTimeString()}`);
-    console.log('=========================================\n');
+    // --- SALVA O SAQUE NA MEMÓRIA DO ADMIN ---
+    const novoSaque = { 
+      id: Date.now().toString(), 
+      uid, nome: nome || 'Anônimo', 
+      valor, tipoChave, chavePix, 
+      hora: new Date().toLocaleTimeString('pt-BR'), 
+      status: 'Pendente' 
+    };
+    historicoSaques.unshift(novoSaque);
+    io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
+    // -----------------------------------------
 
     return res.status(200).json({
       success: true,
-      message: 'Solicitação recebida! Prazo de até 15 minutos após confirmação.'
+      message: 'Solicitação recebida! Prazo de até 15 minutos.'
     });
   } catch (err) {
-    return res.status(500).json({ error: 'Erro ao processar solicitação de saque.' });
+    return res.status(500).json({ error: 'Erro ao processar solicitação.' });
   }
 };
 
@@ -256,6 +267,22 @@ io.on('connection', (socket) => {
   socket.on('reset-game', () => {
     resetarParaLobby();
   });
+
+  // --- COMANDOS DO PAINEL ADMIN ---
+  socket.on('pedir-dados-admin', (senha) => {
+    if (senha === 'boteco2026') {
+      socket.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
+    }
+  });
+
+  socket.on('marcar-saque-pago', (id) => {
+    const saque = historicoSaques.find(s => s.id === id);
+    if (saque) {
+      saque.status = 'Pago';
+      io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
+    }
+  });
+  // --------------------------------
 });
 
 const PORT = process.env.PORT || 3001;
