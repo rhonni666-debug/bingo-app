@@ -796,8 +796,8 @@ function App() {
         <MatchHistoryModal isOpen={historyModalOpen} onClose={() => setHistoryModalOpen(false)} historyList={matchHistory} userTransactions={userTransactions} />
         <HowToPlayModal isOpen={rulesModalOpen} onClose={() => setRulesModalOpen(false)} />
 
-        {/* POP-UP DE COMEMORAÇÃO DA PREMIAÇÃO */}
-        {celebrationModal && (
+        {/* POP-UP DE COMEMORAÇÃO DA PREMIAÇÃO (Oculto se algum modal de auth estiver aberto) */}
+        {celebrationModal && activeModalView === 'NONE' && (
           <div style={{
             position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
             background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999
@@ -835,8 +835,8 @@ function App() {
           </div>
         )}
 
-        {/* QUADRO DE RESUMO FINAL COM TODOS OS GANHADORES */}
-        {gameState === 'WINNERS_SUMMARY' && (
+        {/* QUADRO DE RESUMO FINAL COM TODOS OS GANHADORES (Oculto se algum modal de auth estiver aberto) */}
+        {gameState === 'WINNERS_SUMMARY' && activeModalView === 'NONE' && (
            <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.95)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999 }}>
               <div style={{ background: 'linear-gradient(180deg, #0f172a 0%, #060b18 100%)', border: '3px solid #eab308', borderRadius: '14px', padding: '26px', width: '480px', maxWidth: '95%', textAlign: 'center', boxShadow: '0 0 40px rgba(234, 179, 8, 0.45)' }}>
                  <h2 style={{ color: '#facc15', fontSize: '24px', marginBottom: '18px', textTransform: 'uppercase', textShadow: '0 2px 4px #000' }}>
