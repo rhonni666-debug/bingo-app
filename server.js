@@ -7,7 +7,6 @@ const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-// Rota raiz para testes e verificação de integridade na nuvem
 app.get('/', (req, res) => {
   res.send('Servidor central de Bingo online e operacional!');
 });
@@ -21,7 +20,7 @@ const io = new Server(server, {
 });
 
 let estadoGlobal = {
-  gameState: 'WAITING', // 'WAITING' ou 'DRAWING'
+  gameState: 'WAITING',
   timeRemaining: 180,
   sorteioNum: 120780,
   sorteioHoraInicio: 'Sincronizando...',
@@ -47,7 +46,6 @@ function formatTargetDateTime() {
 }
 estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
 
-// CICLO CENTRAL DO SERVIDOR
 let drawLoop = null;
 let resetTimeout = null;
 let sorteioPausado = false;
@@ -84,7 +82,6 @@ function encerrarPartidaPorBingo(vencedores) {
   console.log(`🎉 [BINGO CONFIRMADO!] O sorteio foi travado. Aguardando comemoração (6.5s) e quadro de resumo (10s) para voltar ao lobby.`);
   
   if (!resetTimeout) {
-    // 17 segundos no total: sincroniza perfeitamente com a comemoração + quadro de resumo
     resetTimeout = setTimeout(() => {
       resetarParaLobby();
     }, 17000);
@@ -130,7 +127,6 @@ function iniciarSorteioCentral() {
   }, 3000);
 }
 
-// Contador do Lobby (1 segundo)
 setInterval(() => {
   if (estadoGlobal.gameState === 'WAITING') {
     if (estadoGlobal.timeRemaining > 0) {
@@ -262,7 +258,6 @@ io.on('connection', (socket) => {
   });
 });
 
-// Utiliza a porta atribuída dinamicamente pela plataforma ou a 3001 como alternativa local
 const PORT = process.env.PORT || 3001;
 server.listen(PORT, () => {
   console.log(`🚀 Servidor central de Bingo rodando na porta ${PORT}`);
