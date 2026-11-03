@@ -1,5 +1,6 @@
 import ModalDeposito from './components/ModalDeposito';
 import ModalSaque from './components/ModalSaque';
+import UserDataModal from './components/UserDataModal';
 import React, { useState } from 'react';
 import BingoCard from './components/BingoCard';
 import MatchHistoryModal from './components/MatchHistoryModal';
@@ -996,6 +997,13 @@ function App() {
           onClose={() => setActiveModalView('NONE')}
           currentUser={currentUser}
           setCurrentUser={setCurrentUser}
+        />
+
+        {/* MODAL DE DADOS DO UTILIZADOR */}
+        <UserDataModal 
+          isOpen={activeModalView === 'DADOS' && currentUser}
+          onClose={() => setActiveModalView('NONE')}
+          currentUser={currentUser}
         />
 
       </div>
