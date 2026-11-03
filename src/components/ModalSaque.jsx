@@ -39,7 +39,7 @@ export default function ModalSaque({ isOpen, onClose, currentUser, setCurrentUse
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/solicitar-saque', {
+      const response = await fetch('https://bingo-app-16i4.onrender.com/solicitar-saque', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

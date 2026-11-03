@@ -1,28 +1,65 @@
 import React, { useState, useEffect } from 'react';
 import { io } from 'socket.io-client';
-import { CheckCircle, Clock, Copy, DollarSign, LogOut } from 'lucide-react';
+import { CheckCircle, Clock, Copy, DollarSign, LogOut, RefreshCw, Wifi, WifiOff } from 'lucide-react';
 
-const socket = io('https://bingo-app-16i4.onrender.com', { transports: ['websocket', 'polling'] });
+const SOCKET_URL = 'https://bingo-app-16i4.onrender.com';
 
 export default function AdminPanel() {
   const [senha, setSenha] = useState('');
   const [autenticado, setAutenticado] = useState(false);
   const [dados, setDados] = useState({ saques: [], entradas: [] });
+  const [conectado, setConectado] = useState(false);
+  const [socketInst, setSocketInst] = useState(null);
 
   useEffect(() => {
-    socket.on('admin-update', (novosDados) => {
-      setDados(novosDados);
+    const s = io(SOCKET_URL, {
+      transports: ['websocket', 'polling'],
+      reconnectionAttempts: 5,
+      timeout: 10000
     });
-    return () => socket.off('admin-update');
-  }, []);
+
+    s.on('connect', () => {
+      setConectado(true);
+      if (autenticado) {
+        s.emit('pedir-dados-admin', 'boteco2026');
+      }
+    });
+
+    s.on('disconnect', () => {
+      setConectado(false);
+    });
+
+    s.on('admin-update', (novosDados) => {
+      if (novosDados) {
+        setDados({
+          saques: novosDados.saques || [],
+          entradas: novosDados.entradas || []
+        });
+      }
+    });
+
+    setSocketInst(s);
+
+    return () => {
+      s.disconnect();
+    };
+  }, [autenticado]);
 
   const fazerLogin = (e) => {
     e.preventDefault();
     if (senha === 'boteco2026') {
       setAutenticado(true);
-      socket.emit('pedir-dados-admin', senha);
+      if (socketInst) {
+        socketInst.emit('pedir-dados-admin', senha);
+      }
     } else {
       alert('Senha incorreta!');
+    }
+  };
+
+  const atualizarManualmente = () => {
+    if (socketInst && autenticado) {
+      socketInst.emit('pedir-dados-admin', 'boteco2026');
     }
   };
 
@@ -32,8 +69,10 @@ export default function AdminPanel() {
   };
 
   const marcarComoPago = (id) => {
-    if(window.confirm('Tem a certeza de que já enviou o PIX a este jogador?')) {
-      socket.emit('marcar-saque-pago', id);
+    if (window.confirm('Tem a certeza de que já enviou o PIX a este jogador?')) {
+      if (socketInst) {
+        socketInst.emit('marcar-saque-pago', id);
+      }
     }
   };
 
@@ -62,13 +101,21 @@ export default function AdminPanel() {
     <div className="min-h-screen bg-gray-900 text-white p-4 md:p-8 font-sans">
       <div className="max-w-6xl mx-auto">
         <div className="flex justify-between items-center mb-8 border-b border-gray-700 pb-4">
-          <h1 className="text-3xl font-bold flex items-center gap-3">
+          <div className="flex items-center gap-3">
             <DollarSign className="text-yellow-500" />
-            Painel do Administrador
-          </h1>
-          <button onClick={() => setAutenticado(false)} className="flex items-center gap-2 text-gray-400 hover:text-white transition">
-            <LogOut size={20} /> Sair
-          </button>
+            <h1 className="text-2xl md:text-3xl font-bold">Painel do Administrador</h1>
+            <span className={`flex items-center gap-1 text-xs px-2 py-1 rounded-full font-bold ${conectado ? 'bg-green-900 text-green-300' : 'bg-red-900 text-red-300'}`}>
+              {conectado ? <><Wifi size={14} /> Online</> : <><WifiOff size={14} /> Desconectado</>}
+            </span>
+          </div>
+          <div className="flex items-center gap-3">
+            <button onClick={atualizarManualmente} className="flex items-center gap-2 bg-gray-800 border border-gray-600 px-3 py-1.5 rounded-lg text-sm text-gray-300 hover:text-white transition">
+              <RefreshCw size={16} /> Atualizar
+            </button>
+            <button onClick={() => setAutenticado(false)} className="flex items-center gap-2 text-gray-400 hover:text-white transition">
+              <LogOut size={20} /> Sair
+            </button>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-8">

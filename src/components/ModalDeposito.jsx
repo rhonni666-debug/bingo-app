@@ -23,7 +23,7 @@ export default function ModalDeposito({ isOpen, onClose, currentUser }) {
     setCarregando(true);
 
     try {
-      const response = await fetch('http://localhost:3001/api/pix', {
+      const response = await fetch('https://bingo-app-16i4.onrender.com/api/pix', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
