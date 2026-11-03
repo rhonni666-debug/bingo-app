@@ -177,6 +177,26 @@ function App() {
     return map[cat.toLowerCase()] || cat.toUpperCase();
   };
 
+  const darkInputStyle = {
+    background: '#1b1e26',
+    border: '1px solid #334155',
+    borderRadius: '8px',
+    padding: '10px 12px',
+    color: '#ffffff',
+    fontSize: '0.9rem',
+    outline: 'none',
+    width: '100%',
+    boxSizing: 'border-box'
+  };
+
+  const labelStyle = {
+    fontSize: '0.8rem',
+    fontWeight: '600',
+    color: '#cbd5e1',
+    marginBottom: '4px',
+    display: 'block'
+  };
+
   return (
     <div className="bds-page-wrapper">
       <style>{`
@@ -910,33 +930,78 @@ function App() {
 
         {/* MODAL DE REGISTRO */}
         {activeModalView === 'REGISTER' && (
-          <div className="bds-modal-backdrop">
-            <div className="auth-form-card">
-              <div className="auth-modal-top">
-                <h2>CRIAR CONTA</h2>
-                <button onClick={() => setActiveModalView('NONE')} type="button" className="auth-close-btn">✕</button>
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '16px'
+          }}>
+            <div style={{
+              background: '#111318', border: '1px solid rgba(250, 204, 21, 0.45)', borderRadius: '16px',
+              width: '100%', maxWidth: '390px', padding: '22px 20px', boxShadow: '0 20px 40px rgba(0,0,0,0.9)',
+              color: '#f8fafc', boxSizing: 'border-box'
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px', marginBottom: '14px'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#facc15' }}>CRIAR CONTA</h2>
+                <button 
+                  onClick={() => setActiveModalView('NONE')} 
+                  type="button" 
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94a3b8', width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer',
+                    fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >✕</button>
               </div>
+              
               <form onSubmit={handleRegisterSubmit}>
-                <div className="form-group"><label>CPF *:</label><input type="text" value={regCpf} onChange={e => setRegCpf(e.target.value)} placeholder="000.000.000-00" required /></div>
-                <div className="form-group"><label>E-mail *:</label><input type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="seu@email.com" required /></div>
-                <div className="form-row-phone">
-                  <div className="form-group" style={{flex: 1}}><label>Área:</label><input type="text" value="55 - Brasil" readOnly style={{background: '#1b1e26', color: '#94a3b8', border: '1px solid #334155'}} /></div>
-                  <div className="form-group" style={{flex: 2}}><label>Telefone *:</label><input type="text" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="(99) 99999-9999" required /></div>
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>CPF *:</label>
+                  <input style={darkInputStyle} type="text" value={regCpf} onChange={e => setRegCpf(e.target.value)} placeholder="000.000.000-00" required />
                 </div>
-                <div className="form-group"><label>Usuário *:</label><input type="text" value={regUser} onChange={e => setRegUser(e.target.value)} placeholder="Ex: JogadorDaSorte 🍀" required /></div>
-                <div className="form-group"><label>Senha *:</label><input type="password" value={regPass} onChange={e => setRegPass(e.target.value)} placeholder="******" required minLength="6" /></div>
-                <div className="form-group"><label>Confirmar Senha *:</label><input type="password" value={regPassConfirm} onChange={e => setRegPassConfirm(e.target.value)} placeholder="******" required minLength="6" /></div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>E-mail *:</label>
+                  <input style={darkInputStyle} type="email" value={regEmail} onChange={e => setRegEmail(e.target.value)} placeholder="seu@email.com" required />
+                </div>
+
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  <div style={{ flex: 1 }}>
+                    <label style={labelStyle}>Área:</label>
+                    <input style={{ ...darkInputStyle, color: '#94a3b8' }} type="text" value="55 - Brasil" readOnly />
+                  </div>
+                  <div style={{ flex: 2 }}>
+                    <label style={labelStyle}>Telefone *:</label>
+                    <input style={darkInputStyle} type="text" value={regPhone} onChange={e => setRegPhone(e.target.value)} placeholder="(99) 99999-9999" required />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Usuário *:</label>
+                  <input style={darkInputStyle} type="text" value={regUser} onChange={e => setRegUser(e.target.value)} placeholder="Ex: JogadorDaSorte 🍀" required />
+                </div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Senha *:</label>
+                  <input style={darkInputStyle} type="password" value={regPass} onChange={e => setRegPass(e.target.value)} placeholder="******" required minLength="6" />
+                </div>
+
+                <div style={{ marginBottom: '10px' }}>
+                  <label style={labelStyle}>Confirmar Senha *:</label>
+                  <input style={darkInputStyle} type="password" value={regPassConfirm} onChange={e => setRegPassConfirm(e.target.value)} placeholder="******" required minLength="6" />
+                </div>
                 
-                <div className="form-checkbox-row">
-                  <input type="checkbox" id="terms" checked={regTerms} onChange={e => setRegTerms(e.target.checked)} />
-                  <label htmlFor="terms">Aceito os termos de uso e política de privacidade</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '12px', marginBottom: '14px', fontSize: '0.82rem', color: '#94a3b8' }}>
+                  <input type="checkbox" id="terms" checked={regTerms} onChange={e => setRegTerms(e.target.checked)} style={{ accentColor: '#16a34a', cursor: 'pointer' }} />
+                  <label htmlFor="terms" style={{ cursor: 'pointer' }}>Aceito os termos de uso e política de privacidade</label>
                 </div>
 
                 <button 
                   type="submit" 
                   style={{
-                    width: '100%', padding: '14px', marginTop: '15px', background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
-                    color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold', letterSpacing: '1px',
+                    width: '100%', padding: '13px', background: 'linear-gradient(135deg, #16a34a 0%, #15803d 100%)',
+                    color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold', letterSpacing: '1px',
                     textTransform: 'uppercase', cursor: 'pointer', boxShadow: '0 4px 14px rgba(22, 163, 74, 0.4)'
                   }}
                 >
@@ -949,22 +1014,48 @@ function App() {
 
         {/* MODAL DE LOGIN */}
         {activeModalView === 'LOGIN' && (
-          <div className="bds-modal-backdrop">
-            <div className="auth-form-card">
-              <div className="auth-modal-top">
-                <h2>Conecte-se</h2>
-                <button onClick={() => setActiveModalView('NONE')} type="button"><X size={22}/></button>
+          <div style={{
+            position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 99999, padding: '16px'
+          }}>
+            <div style={{
+              background: '#111318', border: '1px solid rgba(56, 189, 248, 0.45)', borderRadius: '16px',
+              width: '100%', maxWidth: '390px', padding: '22px 20px', boxShadow: '0 20px 40px rgba(0,0,0,0.9)',
+              color: '#f8fafc', boxSizing: 'border-box'
+            }}>
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                borderBottom: '1px solid rgba(255, 255, 255, 0.1)', paddingBottom: '12px', marginBottom: '14px'
+              }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#38bdf8' }}>Conecte-se</h2>
+                <button 
+                  onClick={() => setActiveModalView('NONE')} 
+                  type="button" 
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)',
+                    color: '#94a3b8', width: '32px', height: '32px', borderRadius: '8px', cursor: 'pointer',
+                    fontSize: '16px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >✕</button>
               </div>
+
               <form onSubmit={handleLoginSubmit}>
-                <div className="form-group"><label>E-mail:</label><input type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="Seu E-mail" required /></div>
-                <div className="form-group"><label>Senha:</label><input type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)} placeholder="******" required /></div>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>E-mail:</label>
+                  <input style={darkInputStyle} type="email" value={loginEmail} onChange={e => setLoginEmail(e.target.value)} placeholder="Seu E-mail" required />
+                </div>
+
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={labelStyle}>Senha:</label>
+                  <input style={darkInputStyle} type="password" value={loginPass} onChange={e => setLoginPass(e.target.value)} placeholder="******" required />
+                </div>
                 
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px', marginBottom: '16px', fontSize: '13px' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '5px', cursor: 'pointer', color: '#475569' }}>
-                    <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} />
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '10px', marginBottom: '16px', fontSize: '13px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer', color: '#94a3b8' }}>
+                    <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} style={{ accentColor: '#0284c7' }} />
                     Lembrar e-mail
                   </label>
-                  <span onClick={handleForgotPassword} style={{ color: '#0284c7', cursor: 'pointer', fontWeight: 'bold' }}>
+                  <span onClick={handleForgotPassword} style={{ color: '#38bdf8', cursor: 'pointer', fontWeight: 'bold' }}>
                     Esqueci a senha
                   </span>
                 </div>
@@ -972,8 +1063,8 @@ function App() {
                 <button 
                   type="submit" 
                   style={{
-                    width: '100%', padding: '14px', background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                    color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '16px', fontWeight: 'bold',
+                    width: '100%', padding: '13px', background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    color: '#ffffff', border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 'bold',
                     letterSpacing: '1px', textTransform: 'uppercase', cursor: 'pointer', boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
                   }}
                 >
