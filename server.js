@@ -51,7 +51,7 @@ let estadoGlobal = {
   drawnNumbers: [],
   pedraAtual: null,
   totalCartelasVendidas: 0,
-  precoPorCartela: 0,40.
+  precoPorCartela: 0.40,
   premios: {
     kuadra: 15.00,
     kina: 15.00,
