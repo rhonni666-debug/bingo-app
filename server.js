@@ -2,27 +2,46 @@
 import cors from 'cors';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import fs from 'fs';
 
 const app = express();
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('Servidor central de Bingo online e operacional!');
-});
-
 const server = createServer(app);
 const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
+  cors: { origin: "*", methods: ["GET", "POST"] }
 });
 
-// --- SISTEMA DE MEMÓRIA DO ADMIN ---
+// --- PERSISTÊNCIA EM DISCO DO ADMIN ---
+const ADMIN_DATA_FILE = './admin_data.json';
 let historicoSaques = [];
 let historicoEntradas = [];
-// -----------------------------------
+
+try {
+  if (fs.existsSync(ADMIN_DATA_FILE)) {
+    const raw = fs.readFileSync(ADMIN_DATA_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    historicoSaques = parsed.saques || [];
+    historicoEntradas = parsed.entradas || [];
+  }
+} catch (e) {
+  console.error("Aviso ao carregar admin_data.json:", e);
+}
+
+function salvarDadosAdmin() {
+  try {
+    fs.writeFileSync(ADMIN_DATA_FILE, JSON.stringify({
+      saques: historicoSaques,
+      entradas: historicoEntradas
+    }, null, 2));
+  } catch (e) {
+    console.error("Erro ao salvar admin_data.json:", e);
+  }
+}
+// --------------------------------------
+
+let cartelasAtivasPorSorteio = {};
 
 let estadoGlobal = {
   gameState: 'WAITING',
@@ -37,7 +56,7 @@ let estadoGlobal = {
     kuadra: 15.00,
     kina: 15.00,
     keno: 40.00,
-    acumulado: 100.00, // Base fixa de R$ 100,00 que cresce com as vendas
+    acumulado: 100.00,
     bolaAcumulado: 36
   }
 };
@@ -65,14 +84,14 @@ function resetarParaLobby() {
   timeoutPausa = null;
   sorteioPausado = false;
 
+  delete cartelasAtivasPorSorteio[estadoGlobal.sorteioNum];
+
   estadoGlobal.gameState = 'WAITING';
   estadoGlobal.timeRemaining = 180;
   estadoGlobal.drawnNumbers = [];
   estadoGlobal.pedraAtual = null;
   estadoGlobal.sorteioNum = Math.floor(120000 + Math.random() * 900);
   estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
-  
-  // Reseta os prêmios base para o próximo sorteio mantendo o Acumulado
   estadoGlobal.premios.kuadra = 15.00;
   estadoGlobal.premios.kina = 15.00;
   estadoGlobal.premios.keno = 40.00;
@@ -81,7 +100,7 @@ function resetarParaLobby() {
   io.emit('estado-jogo', estadoGlobal);
 }
 
-function encerrarPartidaPorBingo(vencedores) {
+function encerrarPartidaPorBingo() {
   if (drawLoop) {
     clearInterval(drawLoop);
     drawLoop = null;
@@ -190,23 +209,28 @@ function gerarPixBancoCentral(chave, valor, txid = 'BINGO01') {
     '6304'
   ].join('');
 
-  const crc = calcularCRC16(payloadSemCRC);
-  return `${payloadSemCRC}${crc}`;
+  return `${payloadSemCRC}${calcularCRC16(payloadSemCRC)}`;
 }
 
 app.post('/api/pix', async (req, res) => {
   try {
-    const { amount } = req.body;
+    const { amount, username } = req.body;
     const valorFinal = Number(amount || 10);
     const idLocal = `PIX${Date.now().toString().slice(-6)}`;
     const brCode = gerarPixBancoCentral(MINHA_CHAVE_PIX, valorFinal, idLocal);
 
-    // --- SALVA A ENTRADA NA MEMÓRIA DO ADMIN ---
-    const novaEntrada = { id: idLocal, amount: valorFinal, status: 'Gerado', hora: new Date().toLocaleTimeString('pt-BR') };
+    const novaEntrada = {
+      id: idLocal,
+      amount: valorFinal,
+      user: username || 'Jogador',
+      status: 'Gerado',
+      hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+    };
     historicoEntradas.unshift(novaEntrada);
-    if(historicoEntradas.length > 50) historicoEntradas.pop();
+    if (historicoEntradas.length > 100) historicoEntradas.pop();
+    salvarDadosAdmin();
+
     io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
-    // -------------------------------------------
 
     return res.status(200).json({
       id: idLocal,
@@ -227,21 +251,27 @@ const tratarSolicitacaoSaque = (req, res) => {
       return res.status(400).json({ error: 'Dados incompletos para o saque.' });
     }
 
-    // --- SALVA O SAQUE NA MEMÓRIA DO ADMIN ---
     const novoSaque = { 
       id: Date.now().toString(), 
-      uid, nome: nome || 'Anônimo', 
-      valor, tipoChave, chavePix, 
-      hora: new Date().toLocaleTimeString('pt-BR'), 
+      uid: uid || 'N/A', 
+      nome: nome || 'Anônimo', 
+      valor: Number(valor), 
+      tipoChave: tipoChave || 'Chave PIX', 
+      chavePix: String(chavePix).trim(), 
+      hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), 
+      data: new Date().toLocaleDateString('pt-BR'),
       status: 'Pendente' 
     };
+
     historicoSaques.unshift(novoSaque);
+    if (historicoSaques.length > 100) historicoSaques.pop();
+    salvarDadosAdmin();
+
     io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
-    // -----------------------------------------
 
     return res.status(200).json({
       success: true,
-      message: 'Solicitação recebida! Prazo de até 15 minutos.'
+      message: 'Solicitação recebida com sucesso!'
     });
   } catch (err) {
     return res.status(500).json({ error: 'Erro ao processar solicitação.' });
@@ -254,6 +284,17 @@ app.post('/api/solicitar-saque', tratarSolicitacaoSaque);
 io.on('connection', (socket) => {
   socket.emit('estado-jogo', estadoGlobal);
 
+  socket.on('recuperar-minhas-cartelas', ({ uid, sorteioNum }) => {
+    if (!uid || !sorteioNum) return;
+    const cartelasDoJogo = cartelasAtivasPorSorteio[sorteioNum];
+    if (cartelasDoJogo && cartelasDoJogo[uid]) {
+      socket.emit('suas-cartelas-sincronizadas', {
+        sorteioNum,
+        cards: cartelasDoJogo[uid]
+      });
+    }
+  });
+
   socket.on('pausar-sorteio-premio', () => {
     sorteioPausado = true;
     if (timeoutPausa) clearTimeout(timeoutPausa);
@@ -262,8 +303,8 @@ io.on('connection', (socket) => {
     }, 6500);
   });
 
-  socket.on('bingo-vencedor', (dados) => {
-    encerrarPartidaPorBingo(dados?.winners);
+  socket.on('bingo-vencedor', () => {
+    encerrarPartidaPorBingo();
   });
 
   socket.on('finalizar-sorteio', () => {
@@ -274,29 +315,35 @@ io.on('connection', (socket) => {
     resetarParaLobby();
   });
 
-  // --- DISTRIBUIÇÃO DAS VENDAS DE CARTELAS ---
   socket.on('comprar-cartelas', (dados) => {
     const quantidade = Number(dados?.quantidade || 0);
     const valorGasto = Number(dados?.valorTotal || 0);
+    const uid = dados?.uid;
+    const sorteioNum = dados?.sorteioNum || estadoGlobal.sorteioNum;
+    const newCards = Array.isArray(dados?.cards) ? dados.cards : [];
+
+    if (uid && newCards.length > 0) {
+      if (!cartelasAtivasPorSorteio[sorteioNum]) {
+        cartelasAtivasPorSorteio[sorteioNum] = {};
+      }
+      if (!cartelasAtivasPorSorteio[sorteioNum][uid]) {
+        cartelasAtivasPorSorteio[sorteioNum][uid] = [];
+      }
+      cartelasAtivasPorSorteio[sorteioNum][uid].push(...newCards);
+    }
 
     if (valorGasto > 0) {
-      // 40% Bingo | 15% Quadra | 15% Quina | 5% Acumulado | 25% Margem da Casa
-      const incrementoBingo = valorGasto * 0.40;
-      const incrementoQuadra = valorGasto * 0.15;
-      const incrementoQuina = valorGasto * 0.15;
-      const incrementoAcumulado = valorGasto * 0.05;
-
-      estadoGlobal.premios.keno += incrementoBingo;
-      estadoGlobal.premios.kuadra += incrementoQuadra;
-      estadoGlobal.premios.kina += incrementoQuina;
-      estadoGlobal.premios.acumulado += incrementoAcumulado;
+      estadoGlobal.premios.keno += valorGasto * 0.40;
+      estadoGlobal.premios.kuadra += valorGasto * 0.15;
+      estadoGlobal.premios.kina += valorGasto * 0.15;
+      estadoGlobal.premios.acumulado += valorGasto * 0.05;
       estadoGlobal.totalCartelasVendidas += quantidade;
 
       io.emit('estado-jogo', estadoGlobal);
     }
   });
 
-  // --- COMANDOS DO PAINEL ADMIN ---
+  // COMANDOS DO PAINEL ADMIN
   socket.on('pedir-dados-admin', (senha) => {
     if (senha === 'boteco2026') {
       socket.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
@@ -307,10 +354,10 @@ io.on('connection', (socket) => {
     const saque = historicoSaques.find(s => s.id === id);
     if (saque) {
       saque.status = 'Pago';
+      salvarDadosAdmin();
       io.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
     }
   });
-  // --------------------------------
 });
 
 const PORT = process.env.PORT || 3001;
