@@ -5,12 +5,13 @@ import { io } from 'socket.io-client';
 const socket = io('https://bingo-app-16i4.onrender.com', {
   transports: ['websocket', 'polling']
 });
+
 const REAL_PLAYERS_POOL = [
   'MARFM69', 'Edvardo', 'KEKEL', 'ALESANTANA72', 'EUSOUASORTE',
   'CTCSU', 'JOAO_BR', 'LUCKY_77', 'TIZIL', 'gaviao78', 'Zilma',
   'Lú', 'S20ATIVADO', 'TÂNIA', 'NENE1410', 'Bugdoidao', 'RENATA',
-  'Lula22','abertojose25@gmail.com','finindatarde','244Nike',
-  'vidarasa22','Ronyn','vanessalopes'
+  'Lula22', 'abertojose25@gmail.com', 'finindatarde', '244Nike',
+  'vidarasa22', 'Ronyn', 'vanessalopes'
 ];
 
 // Instâncias globais de áudio
@@ -89,7 +90,7 @@ export function useBingoGame() {
     return savedSorteio ? Number(savedSorteio) : 120780;
   });
 
-  // 1. CARREGA AS CARTELAS SALVAS NO LOCALSTORAGE PARA ESTE SORTEIO
+  // Carrega as cartelas do cache local imediatamente para evitar sumiço no F5
   const [cards, setCards] = useState(() => {
     try {
       const savedSorteio = localStorage.getItem('bds_active_sorteio_num') || 120780;
@@ -167,7 +168,7 @@ export function useBingoGame() {
     }
   }, [currentUser]);
 
-  // 2. SINCRONIZA AS CARTELAS COM O LOCALSTORAGE QUANDO O SORTEIO OU AS CARTELAS MUDAREM
+  // Sincroniza as cartelas no localStorage quando o sorteioNum mudar
   useEffect(() => {
     if (sorteioNum) {
       localStorage.setItem('bds_active_sorteio_num', String(sorteioNum));
@@ -185,7 +186,17 @@ export function useBingoGame() {
     }
   }, [sorteioNum]);
 
-  // Desbloqueio global no primeiro clique
+  // Solicita as cartelas ativas diretamente ao servidor central pelo UID do usuário
+  useEffect(() => {
+    if (currentUser?.uid && sorteioNum) {
+      socket.emit('recuperar-minhas-cartelas', {
+        uid: currentUser.uid,
+        sorteioNum: sorteioNum
+      });
+    }
+  }, [currentUser?.uid, sorteioNum]);
+
+  // Desbloqueio global de áudio no primeiro clique
   useEffect(() => {
     const unlockAudio = () => {
       if (!audioUnlocked) {
@@ -298,7 +309,6 @@ export function useBingoGame() {
       setGameState(estado.gameState);
       setTimeRemaining(estado.timeRemaining);
 
-      // Se mudou o número do sorteio vindo do servidor, limpa as cartelas da rodada passada
       if (estado.sorteioNum && estado.sorteioNum !== sorteioNumRef.current) {
         setSorteioNum(estado.sorteioNum);
         const cartelasNovoSorteio = localStorage.getItem(`bds_cards_${estado.sorteioNum}`);
@@ -326,6 +336,17 @@ export function useBingoGame() {
       if (!roundFinishedRef.current) {
         setTimeRemaining(dados.timeRemaining);
         setSorteioHoraInicio(dados.sorteioHoraInicio);
+      }
+    };
+
+    const handleCartelasSincronizadas = (dados) => {
+      if (dados && dados.sorteioNum === sorteioNumRef.current && Array.isArray(dados.cards)) {
+        setCards(dados.cards);
+        try {
+          localStorage.setItem(`bds_cards_${dados.sorteioNum}`, JSON.stringify(dados.cards));
+        } catch (err) {
+          console.error("Erro ao salvar cartelas sincronizadas:", err);
+        }
       }
     };
 
@@ -378,7 +399,6 @@ export function useBingoGame() {
         const prizePerWinner = +(totalPrize / winnerCards.length).toFixed(2);
         const chavePremio = activeTarget.toLowerCase();
 
-        // Guarda os detalhes completos dos vencedores para o quadro final
         setWinnersList(prev => ({
           ...prev,
           [chavePremio]: winnerCards.map(w => ({
@@ -444,16 +464,13 @@ export function useBingoGame() {
           prizeVoiceAudio.currentTime = 0;
 
           if (activeTarget === 'KENO') {
-            // 1. Abre o Quadro de Resumo Final com todos os ganhadores
             setGameState('WINNERS_SUMMARY');
 
-            // 2. Fica 10 segundos exibindo o quadro e depois inicia a contagem de 3 minutos
             setTimeout(() => {
               setGameState('WAITING');
               setTimeRemaining(180);
               setDrawnNumbers([]);
               setCards([]);
-              // Limpa as cartelas salvas localmente apenas após a rodada fechar definitivamente
               localStorage.removeItem(`bds_cards_${sorteioNumRef.current}`);
               setBotCards([]);
               botsRef.current = [];
@@ -469,15 +486,18 @@ export function useBingoGame() {
     socket.off('estado-jogo');
     socket.off('sync-timer');
     socket.off('nova-pedra-central');
+    socket.off('suas-cartelas-sincronizadas');
 
     socket.on('estado-jogo', handleEstadoJogo);
     socket.on('sync-timer', handleSyncTimer);
     socket.on('nova-pedra-central', handleNovaPedra);
+    socket.on('suas-cartelas-sincronizadas', handleCartelasSincronizadas);
 
     return () => {
       socket.off('estado-jogo');
       socket.off('sync-timer');
       socket.off('nova-pedra-central');
+      socket.off('suas-cartelas-sincronizadas');
     };
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
@@ -512,7 +532,16 @@ export function useBingoGame() {
       numbers: generateCard90()
     }));
 
-    // 3. ATUALIZA O ESTADO E PERSISTE NO LOCALSTORAGE PARA O SORTEIO ATUAL
+    // Notifica o servidor central na Render para armazenar no UID do jogador
+    socket.emit('comprar-cartelas', {
+      uid: currentUser.uid,
+      sorteioNum: sorteioNumRef.current,
+      quantidade: ticketQty,
+      valorTotal: cost,
+      cards: newCards
+    });
+
+    // Salva no estado e no localStorage simultaneamente
     setCards(prev => {
       const updatedCards = [...prev, ...newCards];
       try {
