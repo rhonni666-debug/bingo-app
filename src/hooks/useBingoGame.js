@@ -613,7 +613,7 @@ export function useBingoGame() {
     gameState, timeRemaining, currentTarget, prizes, winnersList, leaderboard,
     confirmModal, setConfirmModal, successModal, setSuccessModal, lastBoughtQty,
     celebrationModal, activeModalView, setActiveModalView, historyModalOpen, setHistoryModalOpen,
-    rulesModalOpen, setRulesModalOpen, matchHistory, userTransactions,
+    rulesModalOpen, setRulesModalOpen, matchHistory, userTransactions, setUserTransactions,
     updateQty, setQtyDirect, handleDoarClick, confirmPurchase, logout
   };
 }

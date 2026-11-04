@@ -1,11 +1,11 @@
-import ModalDeposito from './components/ModalDeposito';
-import ModalSaque from './components/ModalSaque';
-import UserDataModal from './components/UserDataModal';
 import React, { useState } from 'react';
 import { createPortal } from 'react-dom';
 import BingoCard from './components/BingoCard';
 import MatchHistoryModal from './components/MatchHistoryModal';
 import HowToPlayModal from './components/HowToPlayModal';
+import ModalDeposito from './components/ModalDeposito';
+import ModalSaque from './components/ModalSaque';
+import UserDataModal from './components/UserDataModal';
 import { useBingoGame } from './hooks/useBingoGame';
 import { X, LogOut, User, DollarSign, Menu, HelpCircle, Wallet, Grid, MessageCircle } from 'lucide-react';
 
@@ -25,7 +25,7 @@ function App() {
     gameState, timeRemaining, currentTarget, prizes, winnersList, leaderboard,
     confirmModal, setConfirmModal, successModal, setSuccessModal, lastBoughtQty,
     celebrationModal, activeModalView, setActiveModalView, historyModalOpen, setHistoryModalOpen,
-    rulesModalOpen, setRulesModalOpen, matchHistory, userTransactions,
+    rulesModalOpen, setRulesModalOpen, matchHistory, userTransactions, setUserTransactions,
     updateQty, setQtyDirect, handleDoarClick, confirmPurchase,
     logout
   } = useBingoGame();
@@ -53,8 +53,8 @@ function App() {
     return `${m}:${s}`;
   };
 
-  const lastBall = drawnNumbers.length > 0 ? drawnNumbers[drawnNumbers.length - 1] : null;
-  const previousBalls = drawnNumbers.slice(0, -1).slice(-3).reverse();
+  const lastBall = drawnNumbers && drawnNumbers.length > 0 ? drawnNumbers[drawnNumbers.length - 1] : null;
+  const previousBalls = drawnNumbers ? drawnNumbers.slice(0, -1).slice(-3).reverse() : [];
 
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
@@ -86,8 +86,7 @@ function App() {
         createdAt: new Date().toISOString()
       });
 
-      alert("Conta criada com sucesso! 📩 Verifique a sua caixa de entrada (ou spam) e clique no link para ativar a conta antes de fazer o login.");
-      
+      alert("Conta criada com sucesso! 📩 Verifique o seu e-mail e ative a conta antes de entrar.");
       setActiveModalView('NONE');
       setRegEmail(''); setRegPass(''); setRegPassConfirm(''); setRegCpf(''); setRegPhone(''); setRegUser('');
       await signOut(auth);
@@ -107,7 +106,7 @@ function App() {
       const user = userCredential.user;
 
       if (!user.emailVerified) {
-        alert("⚠️ O seu e-mail ainda não foi verificado! Por favor, acesse o seu e-mail e clique no link de ativação.");
+        alert("⚠️ O seu e-mail ainda não foi verificado! Acesse o seu e-mail e clique no link.");
         await signOut(auth);
         return;
       }
@@ -144,17 +143,15 @@ function App() {
 
   const handleForgotPassword = async () => {
     if (!loginEmail) {
-      alert("⚠️ Digite o seu E-mail no campo de login primeiro e depois clique em 'Esqueci a senha'.");
+      alert("⚠️ Digite o seu E-mail no campo primeiro.");
       return;
     }
-    
     try {
       await sendPasswordResetEmail(auth, loginEmail);
-      alert("✅ Link de recuperação de senha enviado! Verifique o seu e-mail (e a caixa de spam).");
+      alert("✅ Link de recuperação enviado para o seu e-mail!");
     } catch (error) {
       console.error(error);
-      if (error.code === 'auth/user-not-found') alert("Não existe conta com este e-mail.");
-      else alert("Erro: " + error.message);
+      alert("Erro: " + error.message);
     }
   };
 
@@ -571,7 +568,7 @@ function App() {
               <div style={{ textAlign: 'right', lineHeight: '1.2', marginRight: '2px' }}>
                 <div style={{ color: '#cbd5e1', fontSize: '11px', fontWeight: '500' }}>Olá, <strong style={{color: '#fff'}}>{currentUser.username}</strong></div>
                 <div style={{ color: '#facc15', fontSize: '13px', fontWeight: '900', textShadow: '0 0 8px rgba(250, 204, 21, 0.3)' }}>
-                  R$ {currentUser.balance.toFixed(2).replace('.', ',')}
+                  R$ {Number(currentUser.balance || 0).toFixed(2).replace('.', ',')}
                 </div>
               </div>
 
@@ -723,7 +720,7 @@ function App() {
               <div className="bds-matrix-90">
                 {Array.from({ length: 90 }, (_, i) => i + 1).map(num => {
                   const isCurrent = Number(num) === Number(lastBall);
-                  const isCalled = drawnNumbers.some(d => Number(d) === Number(num));
+                  const isCalled = (drawnNumbers || []).some(d => Number(d) === Number(num));
                   let numClass = 'm90-num';
                   if (isCurrent) numClass += ' m90-current';
                   else if (isCalled) numClass += ' m90-called';
@@ -747,7 +744,7 @@ function App() {
               </div>
               <div className="bds-ordem-box">
                 <span className="os-ordem-text">ORDEM</span>
-                <span className="os-ordem-num">{drawnNumbers.length}</span>
+                <span className="os-ordem-num">{(drawnNumbers || []).length}</span>
               </div>
             </div>
 
@@ -757,7 +754,7 @@ function App() {
                   <span className="r-id">{item.id}</span>
                   <span className="r-name">{item.player}</span>
                   <div className="r-balls">
-                    {item.missingBalls.slice(0, 6).map((b, bi) => (
+                    {(item.missingBalls || []).slice(0, 6).map((b, bi) => (
                       <span key={bi} className={`r-ball-pill ball-color-${bi % 4}`}>{b}</span>
                     ))}
                   </div>
@@ -901,10 +898,10 @@ function App() {
         <MessageCircle size={28} />
       </a>
 
-      {/* PORTAL: TODOS OS MODAIS RENDERIZADOS NO BODY */}
+      {/* PORTAL: TODOS OS MODAIS PROTEGIDOS */}
       {typeof document !== 'undefined' && createPortal(
         <>
-          {/* MODAL DE LOGIN */}
+          {/* LOGIN */}
           {activeModalView === 'LOGIN' && (
             <div style={{
               position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
@@ -953,7 +950,7 @@ function App() {
             </div>
           )}
 
-          {/* MODAL DE CADASTRO */}
+          {/* CADASTRO */}
           {activeModalView === 'REGISTER' && (
             <div style={{
               position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
@@ -973,7 +970,7 @@ function App() {
 
                 <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                   <div>
-                    <label style={labelStyle}>Nome de Usuário (Apelido no Bingo)</label>
+                    <label style={labelStyle}>Nome de Usuário</label>
                     <input type="text" required value={regUser} onChange={(e) => setRegUser(e.target.value)} placeholder="Ex: CARLOS10" style={darkInputStyle} />
                   </div>
                   <div>
@@ -999,7 +996,7 @@ function App() {
 
                   <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer', marginTop: '4px' }}>
                     <input type="checkbox" checked={regTerms} onChange={(e) => setRegTerms(e.target.checked)} required />
-                    Li e aceito os Termos de Uso e Regras do Sorteio
+                    Li e aceito os Termos de Uso
                   </label>
 
                   <button type="submit" style={{
@@ -1010,24 +1007,42 @@ function App() {
                   </button>
 
                   <div style={{ textAlign: 'center', marginTop: '4px', fontSize: '0.85rem', color: '#94a3b8' }}>
-                    Já possui conta? <strong onClick={() => setActiveModalView('LOGIN')} style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Faça login</strong>
+                    Já tem conta? <strong onClick={() => setActiveModalView('LOGIN')} style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Entrar</strong>
                   </div>
                 </form>
               </div>
             </div>
           )}
 
-          {/* DEMAIS MODAIS */}
-          {activeModalView === 'DEPOSITAR' && (
-            <ModalDeposito isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} setCurrentUser={setCurrentUser} setUserTransactions={setUserTransactions} />
+          {/* DEPOSITAR (PROTEGIDO) */}
+          {activeModalView === 'DEPOSITAR' && currentUser && (
+            <ModalDeposito 
+              isOpen={true} 
+              onClose={() => setActiveModalView('NONE')} 
+              currentUser={currentUser} 
+              setCurrentUser={setCurrentUser} 
+              setUserTransactions={setUserTransactions} 
+            />
           )}
 
-          {activeModalView === 'SACAR' && (
-            <ModalSaque isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} setCurrentUser={setCurrentUser} setUserTransactions={setUserTransactions} />
+          {/* SACAR (PROTEGIDO) */}
+          {activeModalView === 'SACAR' && currentUser && (
+            <ModalSaque 
+              isOpen={true} 
+              onClose={() => setActiveModalView('NONE')} 
+              currentUser={currentUser} 
+              setCurrentUser={setCurrentUser} 
+              setUserTransactions={setUserTransactions} 
+            />
           )}
 
-          {activeModalView === 'DADOS' && (
-            <UserDataModal isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} />
+          {/* DADOS (PROTEGIDO) */}
+          {activeModalView === 'DADOS' && currentUser && (
+            <UserDataModal 
+              isOpen={true} 
+              onClose={() => setActiveModalView('NONE')} 
+              currentUser={currentUser} 
+            />
           )}
 
           {/* CONFIRMAÇÃO DE COMPRA */}
