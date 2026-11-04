@@ -13,7 +13,7 @@ const REAL_PLAYERS_POOL = [
   'Lula22', 'abertojose25@gmail.com', 'finindatarde', '244Nike',
   'vidarasa22', 'Ronyn', 'vanessalopes','paulinhalanches',
   'gabisantos','mariaaurora','Odetesilva','Norapacheco','eduardolopes','Creuzamaria',
-  'anabeatriz''jose-carlos','Trumpmeuovo','Geo286','anapaula64@gmail.com',
+  'anabeatriz','jose-carlos','Trumpmeuovo','Geo286','anapaula64@gmail.com',
   'Verdaodamasssa','TropadoMengao','Merendiel','gingartcapoeira','Tudo2','AndrewCocao','Redbull26',
   'Novin7','Peixaria26','tropadomantem','esquinada19','pedroIvo55','nonato','jabingeui','Ginde10',
 'Windows98','Penha2687','Queixotatto','linsducorte','ElderMecanico','gbsilva','biaMorenana','22737373',
