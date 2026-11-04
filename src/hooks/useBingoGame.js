@@ -11,7 +11,12 @@ const REAL_PLAYERS_POOL = [
   'CTCSU', 'JOAO_BR', 'LUCKY_77', 'TIZIL', 'gaviao78', 'Zilma',
   'Lú', 'S20ATIVADO', 'TÂNIA', 'NENE1410', 'Bugdoidao', 'RENATA',
   'Lula22', 'abertojose25@gmail.com', 'finindatarde', '244Nike',
-  'vidarasa22', 'Ronyn', 'vanessalopes'
+  'vidarasa22', 'Ronyn', 'vanessalopes','paulinhalanches',
+  'gabisantos','mariaaurora','Odetesilva','Norapacheco','eduardolopes','Creuzamaria',
+  'anabeatriz''jose-carlos','Trumpmeuovo','Geo286','anapaula64@gmail.com',
+  'Verdaodamasssa','TropadoMengao','Merendiel','gingartcapoeira','Tudo2','AndrewCocao','Redbull26',
+  'Novin7','Peixaria26','tropadomantem','esquinada19','pedroIvo55','nonato','jabingeui','Ginde10',
+'Windows98','Penha2687','Queixotatto','linsducorte','ElderMecanico','gbsilva','biaMorenana','22737373',
 ];
 
 // Instâncias globais de áudio
@@ -334,7 +339,7 @@ export function useBingoGame() {
       }
 
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = Math.floor(Math.random() * 5) + 4; // Entre 4 e 8 bots por rodada
+        const numBots = 8; // EXATAMENTE 8 BOTS FIXOS
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
@@ -342,7 +347,7 @@ export function useBingoGame() {
         let botBaseId = Math.floor(100 + Math.random() * 2000);
 
         botsEscolhidos.forEach(nomeBot => {
-          for (let i = 0; i < 20; i++) { // BOTS AGORA COMPRAM 20 CARTELAS CADA UM
+          for (let i = 0; i < 17; i++) { // EXATAMENTE 17 CARTELAS CADA BOT (TOTAL 136)
             novasCartelasBots.push({
               id: botBaseId++,
               player: nomeBot,
