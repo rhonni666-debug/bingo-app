@@ -51,13 +51,13 @@ let estadoGlobal = {
   drawnNumbers: [],
   pedraAtual: null,
   totalCartelasVendidas: 0,
-  precoPorCartela: 1.00,
+  precoPorCartela: 0,40,
   premios: {
     kuadra: 15.00,
     kina: 15.00,
     keno: 40.00,
     acumulado: 100.00,
-    bolaAcumulado: 36
+    bolaAcumulado: 0
   }
 };
 

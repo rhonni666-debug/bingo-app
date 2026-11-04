@@ -103,7 +103,8 @@ export function useBingoGame() {
 
   const [botCards, setBotCards] = useState([]);
   const [drawnNumbers, setDrawnNumbers] = useState([]);
-  const [betAmount, setBetAmount] = useState(0.20);
+  const [betAmount, setBetAmount] = useState(0.40
+  );
   const [ticketQty, setTicketQty] = useState(5);
 
   const [sorteioHoraInicio, setSorteioHoraInicio] = useState('--------');
@@ -320,7 +321,7 @@ export function useBingoGame() {
       const numerosNormalizados = (estado.drawnNumbers || []).map(n => Number(n));
       setDrawnNumbers(numerosNormalizados);
 
-      // Sincroniza os prêmios em tempo real vindos do servidor (suporta 'premios' ou 'prizes')
+      // Sincroniza os prêmios em tempo real vindos do servidor
       const premiosServidor = estado.premios || estado.prizes;
       if (premiosServidor) {
         setPrizes({
@@ -333,7 +334,6 @@ export function useBingoGame() {
       }
 
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        // ZONA DOS BOTS COM 5 CARTELAS CADA
         const numBots = Math.floor(Math.random() * 5) + 4; // Entre 4 e 8 bots por rodada
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
@@ -342,7 +342,7 @@ export function useBingoGame() {
         let botBaseId = Math.floor(100 + Math.random() * 2000);
 
         botsEscolhidos.forEach(nomeBot => {
-          for (let i = 0; i < 5; i++) { // Cada bot compra exatamente 5 cartelas
+          for (let i = 0; i < 20; i++) { // BOTS AGORA COMPRAM 20 CARTELAS CADA UM
             novasCartelasBots.push({
               id: botBaseId++,
               player: nomeBot,
@@ -525,8 +525,10 @@ export function useBingoGame() {
     };
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
-  const updateQty = (delta) => setTicketQty(prev => Math.max(1, prev + delta));
-  const setQtyDirect = (val) => setTicketQty(val);
+  // CONTROLES DE QUANTIDADE COM LIMITE DE 50 CARTELAS
+  const LIMITE_CARTELAS = 50;
+  const updateQty = (delta) => setTicketQty(prev => Math.min(LIMITE_CARTELAS, Math.max(1, prev + delta)));
+  const setQtyDirect = (val) => setTicketQty(Math.min(LIMITE_CARTELAS, val));
 
   const handleDoarClick = () => {
     if (!currentUser) {
@@ -538,6 +540,14 @@ export function useBingoGame() {
 
   const confirmPurchase = () => {
     if (!currentUser) return;
+
+    // TRAVA DE COMPRA - NÃO PERMITE PASSAR DE 50 CARTELAS NO TOTAL
+    if (cards.length + ticketQty > LIMITE_CARTELAS) {
+      alert(`Você só pode ter no máximo ${LIMITE_CARTELAS} cartelas por rodada!`);
+      setConfirmModal(false);
+      return;
+    }
+
     const cost = +(ticketQty * betAmount).toFixed(2);
     if (cost > currentUser.balance) {
       alert('Saldo insuficiente!');
