@@ -333,14 +333,26 @@ export function useBingoGame() {
       }
 
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const activeCount = Math.floor(Math.random() * 15) + 10;
-        const bots = Array.from({ length: activeCount }).map(() => ({
-          id: Math.floor(100 + Math.random() * 1400),
-          player: REAL_PLAYERS_POOL[Math.floor(Math.random() * REAL_PLAYERS_POOL.length)],
-          numbers: generateCard90()
-        }));
-        botsRef.current = bots;
-        setBotCards(bots);
+        // ZONA DOS BOTS COM 5 CARTELAS CADA
+        const numBots = Math.floor(Math.random() * 5) + 4; // Entre 4 e 8 bots por rodada
+        const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
+        const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
+
+        const novasCartelasBots = [];
+        let botBaseId = Math.floor(100 + Math.random() * 2000);
+
+        botsEscolhidos.forEach(nomeBot => {
+          for (let i = 0; i < 5; i++) { // Cada bot compra exatamente 5 cartelas
+            novasCartelasBots.push({
+              id: botBaseId++,
+              player: nomeBot,
+              numbers: generateCard90()
+            });
+          }
+        });
+
+        botsRef.current = novasCartelasBots;
+        setBotCards(novasCartelasBots);
       }
     };
 
