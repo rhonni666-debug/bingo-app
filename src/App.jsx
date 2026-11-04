@@ -17,7 +17,6 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVe
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
 function App() {
-  // ROTA DO PAINEL SECRETO (aceita tanto por URL direta quanto por #admin)
   if (typeof window !== 'undefined' && (window.location.pathname === '/admin-secreto' || window.location.hash === '#admin')) {
     return <AdminPanel />;
   }
@@ -817,10 +816,10 @@ function App() {
         <MatchHistoryModal isOpen={historyModalOpen} onClose={() => setHistoryModalOpen(false)} historyList={matchHistory} userTransactions={userTransactions} />
         <HowToPlayModal isOpen={rulesModalOpen} onClose={() => setRulesModalOpen(false)} />
 
-        {/* POP-UP DE COMEMORAÇÃO DA PREMIAÇÃO (Oculto se algum modal de auth estiver aberto) */}
+        {/* POP-UP DE COMEMORAÇÃO DA PREMIAÇÃO */}
         {celebrationModal && activeModalView === 'NONE' && (
           <div style={{
-            position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+            position: 'fixed', inset: 0,
             background: 'rgba(0,0,0,0.85)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999
           }}>
             <div style={{
@@ -856,9 +855,9 @@ function App() {
           </div>
         )}
 
-        {/* QUADRO DE RESUMO FINAL COM TODOS OS GANHADORES (Oculto se algum modal de auth estiver aberto) */}
+        {/* QUADRO DE RESUMO FINAL */}
         {gameState === 'WINNERS_SUMMARY' && activeModalView === 'NONE' && (
-           <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', background: 'rgba(0,0,0,0.95)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999 }}>
+           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.95)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 99999 }}>
               <div style={{ background: 'linear-gradient(180deg, #0f172a 0%, #060b18 100%)', border: '3px solid #eab308', borderRadius: '14px', padding: '26px', width: '480px', maxWidth: '95%', textAlign: 'center', boxShadow: '0 0 40px rgba(234, 179, 8, 0.45)' }}>
                  <h2 style={{ color: '#facc15', fontSize: '24px', marginBottom: '18px', textTransform: 'uppercase', textShadow: '0 2px 4px #000' }}>
                    🏁 GANHADORES DO SORTEIO #{sorteioNum} 🏁
@@ -897,33 +896,174 @@ function App() {
            </div>
         )}
 
-        {/* MODAL DE CONFIRMAÇÃO DE COMPRA */}
+        {/* MODAL DE CONFIRMAÇÃO DE COMPRA (FIXO NO CENTRO DA TELA) */}
         {confirmModal && (
-          <div className="bds-modal-backdrop">
-            <div className="bds-dialog-box">
-              <div className="bds-dialog-header">
-                <span>CONFIRMAÇÃO</span>
-                <button onClick={() => setConfirmModal(false)} type="button"><X size={20} /></button>
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '16px'
+          }}>
+            <div style={{
+              background: '#111318',
+              border: '1.5px solid #facc15',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '360px',
+              padding: '24px 20px',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.95), 0 0 25px rgba(250, 204, 21, 0.25)',
+              color: '#f8fafc',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid rgba(250, 204, 21, 0.3)',
+                paddingBottom: '12px',
+                marginBottom: '16px'
+              }}>
+                <span style={{ color: '#facc15', fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
+                  CONFIRMAÇÃO
+                </span>
+                <button 
+                  onClick={() => setConfirmModal(false)} 
+                  type="button" 
+                  style={{
+                    background: 'rgba(255,255,255,0.08)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    color: '#94a3b8',
+                    borderRadius: '8px',
+                    width: '30px',
+                    height: '30px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <div className="bds-dialog-body">
-                Confirmar doação para {ticketQty} cartelas no valor de R$ {(ticketQty * betAmount).toFixed(2).replace('.', ',')}?
+
+              <div style={{
+                fontSize: '15px',
+                lineHeight: '1.5',
+                color: '#e2e8f0',
+                marginBottom: '24px',
+                textAlign: 'center'
+              }}>
+                Confirmar doação para <strong style={{ color: '#facc15' }}>{ticketQty}</strong> cartelas no valor de <strong style={{ color: '#4ade80' }}>R$ {(ticketQty * betAmount).toFixed(2).replace('.', ',')}</strong>?
               </div>
-              <div className="bds-dialog-actions">
-                <button className="btn-dialog-no" onClick={() => setConfirmModal(false)} type="button">Não</button>
-                <button className="btn-dialog-yes" onClick={confirmPurchase} type="button">Sim</button>
+
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button 
+                  onClick={() => setConfirmModal(false)} 
+                  type="button"
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)',
+                    border: '1px solid #fca5a5',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
+                  }}
+                >
+                  Não
+                </button>
+                <button 
+                  onClick={confirmPurchase} 
+                  type="button"
+                  style={{
+                    flex: 1,
+                    padding: '12px',
+                    background: 'linear-gradient(180deg, #16a34a 0%, #14532d 100%)',
+                    border: '1px solid #86efac',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontWeight: 900,
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    textTransform: 'uppercase',
+                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.45)'
+                  }}
+                >
+                  Sim
+                </button>
               </div>
             </div>
           </div>
         )}
 
+        {/* MODAL DE SUCESSO (FIXO NO CENTRO DA TELA) */}
         {successModal && (
-          <div className="bds-modal-backdrop">
-            <div className="bds-dialog-box">
-              <div className="bds-dialog-header"><span>CONFIRMAÇÃO</span></div>
-              <div className="bds-dialog-body">Você recebeu {lastBoughtQty} cartelas.<br />Bom jogo</div>
-              <div className="bds-dialog-actions">
-                <button className="btn-dialog-continue" onClick={() => setSuccessModal(false)} type="button">Continuar</button>
+          <div style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0, 0, 0, 0.85)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 999999,
+            padding: '16px'
+          }}>
+            <div style={{
+              background: '#111318',
+              border: '1.5px solid #4ade80',
+              borderRadius: '16px',
+              width: '100%',
+              maxWidth: '350px',
+              padding: '24px 20px',
+              textAlign: 'center',
+              boxShadow: '0 20px 45px rgba(0,0,0,0.95), 0 0 25px rgba(74, 222, 128, 0.25)',
+              color: '#f8fafc',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{
+                color: '#4ade80',
+                fontSize: '16px',
+                fontWeight: 900,
+                letterSpacing: '1px',
+                marginBottom: '16px',
+                borderBottom: '1px solid rgba(74, 222, 128, 0.25)',
+                paddingBottom: '10px'
+              }}>
+                CARTELAS CONFIRMADAS!
               </div>
+              <div style={{ fontSize: '15px', color: '#e2e8f0', marginBottom: '22px', lineHeight: '1.5' }}>
+                Você recebeu <strong style={{ color: '#facc15' }}>{lastBoughtQty}</strong> cartelas.<br />
+                🍀 Bom jogo!
+              </div>
+              <button 
+                onClick={() => setSuccessModal(false)} 
+                type="button"
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                  border: '1px solid #7dd3fc',
+                  borderRadius: '8px',
+                  color: '#ffffff',
+                  fontSize: '14px',
+                  fontWeight: 900,
+                  textTransform: 'uppercase',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
+                }}
+              >
+                Continuar
+              </button>
             </div>
           </div>
         )}
