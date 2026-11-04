@@ -320,6 +320,18 @@ export function useBingoGame() {
       const numerosNormalizados = (estado.drawnNumbers || []).map(n => Number(n));
       setDrawnNumbers(numerosNormalizados);
 
+      // Sincroniza os prêmios em tempo real vindos do servidor (suporta 'premios' ou 'prizes')
+      const premiosServidor = estado.premios || estado.prizes;
+      if (premiosServidor) {
+        setPrizes({
+          kuadra: Number(premiosServidor.kuadra || 15.00),
+          kina: Number(premiosServidor.kina || 15.00),
+          keno: Number(premiosServidor.keno || 40.00),
+          acumulado: Number(premiosServidor.acumulado || 100.00),
+          bolaAcumulado: Number(premiosServidor.bolaAcumulado || 36)
+        });
+      }
+
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
         const activeCount = Math.floor(Math.random() * 15) + 10;
         const bots = Array.from({ length: activeCount }).map(() => ({
@@ -532,7 +544,7 @@ export function useBingoGame() {
       numbers: generateCard90()
     }));
 
-    // Notifica o servidor central na Render para armazenar no UID do jogador
+    // Notifica o servidor central na Render para armazenar no UID do jogador e subir os prêmios
     socket.emit('comprar-cartelas', {
       uid: currentUser.uid,
       sorteioNum: sorteioNumRef.current,
