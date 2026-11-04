@@ -7,12 +7,10 @@ import BingoCard from './components/BingoCard';
 import MatchHistoryModal from './components/MatchHistoryModal';
 import HowToPlayModal from './components/HowToPlayModal';
 import { useBingoGame } from './hooks/useBingoGame';
-import { X, LogOut, User, DollarSign, Menu, HelpCircle, Wallet, Grid } from 'lucide-react';
+import { X, LogOut, User, DollarSign, Menu, HelpCircle, Wallet, Grid, MessageCircle } from 'lucide-react';
 
-// IMPORTAÇÃO DO PAINEL DE ADMINISTRAÇÃO SECRETO
 import AdminPanel from './AdminPanel';
 
-// IMPORTAÇÕES DO FIREBASE
 import { auth, db } from './firebase';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, sendEmailVerification, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
@@ -79,7 +77,6 @@ function App() {
 
       await sendEmailVerification(user);
 
-      // ZERANDO O SALDO INICIAL AQUI
       await setDoc(doc(db, "users", user.uid), {
         username: regUser.trim().toUpperCase(),
         cpf: regCpf,
@@ -147,7 +144,7 @@ function App() {
 
   const handleForgotPassword = async () => {
     if (!loginEmail) {
-      alert("⚠️ Por favor, digite o seu E-mail no campo acima primeiro e depois clique em 'Esqueci a senha'.");
+      alert("⚠️ Digite o seu E-mail no campo de login primeiro e depois clique em 'Esqueci a senha'.");
       return;
     }
     
@@ -156,13 +153,8 @@ function App() {
       alert("✅ Link de recuperação de senha enviado! Verifique o seu e-mail (e a caixa de spam).");
     } catch (error) {
       console.error(error);
-      if (error.code === 'auth/user-not-found') {
-        alert("Não existe nenhuma conta cadastrada com este e-mail.");
-      } else if (error.code === 'auth/invalid-email') {
-        alert("Formato de e-mail inválido.");
-      } else {
-        alert("Erro ao enviar o e-mail de recuperação: " + error.message);
-      }
+      if (error.code === 'auth/user-not-found') alert("Não existe conta com este e-mail.");
+      else alert("Erro: " + error.message);
     }
   };
 
@@ -211,7 +203,6 @@ function App() {
           border-left: 1px solid rgba(250, 204, 21, 0.25) !important;
           border-right: 1px solid rgba(250, 204, 21, 0.25) !important;
         }
-
         .bds-round-menu-icon {
           background: linear-gradient(180deg, #1e3a8a, #091326) !important;
           border: 1.5px solid #eab308 !important;
@@ -234,7 +225,6 @@ function App() {
           text-shadow: 0 0 12px rgba(56, 189, 248, 0.6), 0 2px 4px #000 !important;
           font-weight: 900 !important;
         }
-
         .bds-prizes-stack {
           display: grid !important;
           grid-template-columns: repeat(3, 1fr) !important;
@@ -273,7 +263,6 @@ function App() {
           font-size: 14px !important;
           text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9) !important;
         }
-
         .bds-live-acumulado-row, .bds-acumulado-bar {
           background: linear-gradient(90deg, #091326 0%, #162447 50%, #091326 100%) !important;
           border: 1.5px solid rgba(250, 204, 21, 0.65) !important;
@@ -301,7 +290,6 @@ function App() {
           font-weight: 900 !important;
           box-shadow: inset -2px -2px 4px rgba(0,0,0,0.6), 0 2px 6px rgba(220, 38, 38, 0.6) !important;
         }
-
         .bds-info-pill {
           background: linear-gradient(180deg, #111e3d 0%, #080f24 100%) !important;
           border: 1px solid rgba(250, 204, 21, 0.45) !important;
@@ -310,7 +298,6 @@ function App() {
         }
         .pill-title { color: #fde047 !important; font-weight: 700 !important; }
         .pill-val { color: #ffffff !important; font-weight: 900 !important; }
-
         .bds-halloween-banner {
           background: linear-gradient(90deg, rgba(124, 45, 18, 0.6), rgba(234, 88, 12, 0.3), rgba(124, 45, 18, 0.6)) !important;
           border: 1px solid rgba(251, 146, 60, 0.5) !important;
@@ -319,7 +306,6 @@ function App() {
         }
         .h-banner-title { color: #fde047 !important; font-weight: 900 !important; }
         .h-banner-sub { color: #fed7aa !important; font-weight: 700 !important; }
-
         .bds-quick-qty-bar {
           background: rgba(9, 19, 38, 0.8) !important;
           border: 1px solid rgba(56, 189, 248, 0.25) !important;
@@ -337,7 +323,6 @@ function App() {
           border-color: #fde047 !important;
           color: #fde047 !important;
         }
-
         .bds-doar-button {
           background: linear-gradient(180deg, #4ade80 0%, #16a34a 50%, #14532d 100%) !important;
           border: 1px solid #bbf7d0 !important;
@@ -346,13 +331,11 @@ function App() {
           text-shadow: 0 1px 2px #000 !important;
           box-shadow: 0 0 14px rgba(34, 197, 94, 0.5) !important;
         }
-
         .bds-cartelas-bar {
           background: linear-gradient(90deg, #091326 0%, #162447 100%) !important;
           border: 1px solid rgba(250, 204, 21, 0.45) !important;
           border-radius: 8px !important;
         }
-
         .bds-globe-circle {
           background: radial-gradient(circle at 50% 40%, rgba(30, 64, 175, 0.45), rgba(7, 16, 40, 0.95) 75%) !important;
           border: 3px solid #eab308 !important;
@@ -371,7 +354,6 @@ function App() {
         .prev-pos-1 { background: radial-gradient(circle at 30% 30%, #e9d5ff, #9333ea 65%, #3b0764) !important; border: 1.5px solid #f3e8ff !important; }
         .prev-pos-2 { background: radial-gradient(circle at 30% 30%, #fde68a, #d97706 65%, #451a03) !important; border: 1.5px solid #fef3c7 !important; }
         .prev-pos-3 { background: radial-gradient(circle at 30% 30%, #67e8f9, #0284c7 65%, #082f49) !important; border: 1.5px solid #cffafe !important; }
-
         .bds-matrix-90 {
           background: linear-gradient(180deg, #060d1f 0%, #030712 100%) !important;
           border: 1.5px solid rgba(250, 204, 21, 0.5) !important;
@@ -381,7 +363,6 @@ function App() {
         .m90-num { color: #fef08a !important; opacity: 0.75; font-weight: 700 !important; }
         .m90-called { color: #4ade80 !important; opacity: 1 !important; font-weight: 900 !important; text-shadow: 0 0 8px rgba(74, 222, 128, 0.85) !important; }
         .m90-current { color: #f87171 !important; opacity: 1 !important; font-weight: 900 !important; text-shadow: 0 0 10px rgba(248, 113, 113, 1) !important; transform: scale(1.12); }
-
         .bds-order-strip {
           background: linear-gradient(180deg, #fde047 0%, #eab308 45%, #a16207 100%) !important;
           border: 1px solid #fef9c3 !important;
@@ -437,7 +418,6 @@ function App() {
           font-weight: 900 !important;
           font-size: 15px !important;
         }
-
         .bds-live-ranking {
           background: #060c1e !important;
           border: 1px solid rgba(56, 189, 248, 0.3) !important;
@@ -461,7 +441,6 @@ function App() {
         .rank-user-row .r-id, .rank-user-row .r-name { color: #fde047 !important; font-weight: 900 !important; }
         .r-id { color: #94a3b8 !important; font-weight: 700 !important; }
         .r-name { color: #f8fafc !important; font-weight: 700 !important; }
-
         .r-ball-pill {
           border-radius: 50% !important;
           width: 22px !important;
@@ -478,7 +457,6 @@ function App() {
         .ball-color-1 { background: radial-gradient(circle at 30% 30%, #4ade80, #15803d) !important; border: 1px solid #86efac !important; }
         .ball-color-2 { background: radial-gradient(circle at 30% 30%, #38bdf8, #0369a1) !important; border: 1px solid #7dd3fc !important; }
         .ball-color-3 { background: radial-gradient(circle at 30% 30%, #c084fc, #7e22ce) !important; border: 1px solid #d8b4fe !important; }
-
         .bds-tab-red {
           background: linear-gradient(180deg, #dc2626 0%, #7f1d1d 100%) !important;
           border: 1px solid #fca5a5 !important;
@@ -493,7 +471,6 @@ function App() {
           color: #1e1b4b !important;
           font-weight: 900 !important;
         }
-
         .bds-cards-two-cols {
           display: flex !important;
           flex-direction: column !important;
@@ -643,7 +620,6 @@ function App() {
         {/* TELA DE ESPERA */}
         {gameState === 'WAITING' && (
           <div className="bds-lobby-view">
-            
             <div className="bds-timer-section">
               <button className="bds-round-menu-icon" onClick={() => setRulesModalOpen(true)} type="button"><HelpCircle color="#fde047" size={20} /></button>
               <div className="bds-timer-card">
@@ -678,7 +654,7 @@ function App() {
             </div>
 
             <div className="bds-quick-qty-bar">
-              {[5, 10, 20, 30, 40, 50, 100, 200].map(v => (
+              {[5, 10, 15, 20, 25, 30, 35, 40].map(v => (
                 <button key={v} onClick={() => setQtyDirect(v)} type="button" className="bds-qty-chip">{v}</button>
               ))}
             </div>
@@ -716,7 +692,6 @@ function App() {
                 ))}
               </div>
             </div>
-
           </div>
         )}
 
@@ -900,119 +875,189 @@ function App() {
 
       </div>
 
-      {/* PORTAL: RENDERIZA OS MODAIS DIRETAMENTE NO BODY (IMPOSSÍVEL CAIR PARA BAIXO COM AS CARTELAS) */}
+      {/* BOTÃO FLUTUANTE DO WHATSAPP */}
+      <a
+        href="https://wa.me/5521999999999?text=Olá!%20Preciso%20de%20ajuda%20no%20Boteco%20da%20Sorte."
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          background: '#25D366',
+          color: '#ffffff',
+          width: '54px',
+          height: '54px',
+          borderRadius: '50%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 6px 16px rgba(0,0,0,0.6), 0 0 15px rgba(37, 211, 102, 0.4)',
+          zIndex: 99999,
+          textDecoration: 'none',
+          border: '2px solid #fff'
+        }}
+      >
+        <MessageCircle size={28} />
+      </a>
+
+      {/* PORTAL: TODOS OS MODAIS RENDERIZADOS NO BODY */}
       {typeof document !== 'undefined' && createPortal(
         <>
+          {/* MODAL DE LOGIN */}
+          {activeModalView === 'LOGIN' && (
+            <div style={{
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999999, padding: '16px', boxSizing: 'border-box'
+            }}>
+              <div style={{
+                background: '#111318', border: '1.5px solid #38bdf8', borderRadius: '16px', width: '100%', maxWidth: '380px',
+                padding: '24px 20px', boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(56, 189, 248, 0.3)', color: '#f8fafc'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(56, 189, 248, 0.3)', paddingBottom: '10px', marginBottom: '16px' }}>
+                  <span style={{ color: '#38bdf8', fontSize: '18px', fontWeight: 900 }}>ENTRAR NA CONTA</span>
+                  <button onClick={() => setActiveModalView('NONE')} type="button" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleLoginSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div>
+                    <label style={labelStyle}>E-mail</label>
+                    <input type="email" required value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="seu@email.com" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Senha</label>
+                    <input type="password" required value={loginPass} onChange={(e) => setLoginPass(e.target.value)} placeholder="••••••••" style={darkInputStyle} />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', color: '#94a3b8' }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={rememberMe} onChange={(e) => setRememberMe(e.target.checked)} /> Lembrar
+                    </label>
+                    <span onClick={handleForgotPassword} style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Esqueci a senha</span>
+                  </div>
+
+                  <button type="submit" style={{
+                    marginTop: '8px', padding: '12px', background: 'linear-gradient(180deg, #0284c7 0%, #0369a1 100%)',
+                    border: '1px solid #7dd3fc', borderRadius: '8px', color: '#ffffff', fontWeight: 900, fontSize: '15px', cursor: 'pointer', textTransform: 'uppercase'
+                  }}>
+                    Acessar
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    Não tem conta? <strong onClick={() => setActiveModalView('REGISTER')} style={{ color: '#facc15', cursor: 'pointer', textDecoration: 'underline' }}>Criar conta grátis</strong>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* MODAL DE CADASTRO */}
+          {activeModalView === 'REGISTER' && (
+            <div style={{
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999999, padding: '16px', boxSizing: 'border-box'
+            }}>
+              <div style={{
+                background: '#111318', border: '1.5px solid #facc15', borderRadius: '16px', width: '100%', maxWidth: '400px',
+                padding: '24px 20px', boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(250, 204, 21, 0.3)', color: '#f8fafc',
+                maxHeight: '90vh', overflowY: 'auto'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(250, 204, 21, 0.3)', paddingBottom: '10px', marginBottom: '14px' }}>
+                  <span style={{ color: '#facc15', fontSize: '18px', fontWeight: 900 }}>CRIAR CONTA</span>
+                  <button onClick={() => setActiveModalView('NONE')} type="button" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
+                    <X size={20} />
+                  </button>
+                </div>
+
+                <form onSubmit={handleRegisterSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div>
+                    <label style={labelStyle}>Nome de Usuário (Apelido no Bingo)</label>
+                    <input type="text" required value={regUser} onChange={(e) => setRegUser(e.target.value)} placeholder="Ex: CARLOS10" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>CPF (Somente números)</label>
+                    <input type="text" required value={regCpf} onChange={(e) => setRegCpf(e.target.value)} placeholder="000.000.000-00" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>E-mail</label>
+                    <input type="email" required value={regEmail} onChange={(e) => setRegEmail(e.target.value)} placeholder="seu@email.com" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Celular / WhatsApp</label>
+                    <input type="tel" value={regPhone} onChange={(e) => setRegPhone(e.target.value)} placeholder="(21) 99999-9999" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Senha</label>
+                    <input type="password" required value={regPass} onChange={(e) => setRegPass(e.target.value)} placeholder="Pelo menos 6 dígitos" style={darkInputStyle} />
+                  </div>
+                  <div>
+                    <label style={labelStyle}>Confirmar Senha</label>
+                    <input type="password" required value={regPassConfirm} onChange={(e) => setRegPassConfirm(e.target.value)} placeholder="Repita a senha" style={darkInputStyle} />
+                  </div>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: '#cbd5e1', cursor: 'pointer', marginTop: '4px' }}>
+                    <input type="checkbox" checked={regTerms} onChange={(e) => setRegTerms(e.target.checked)} required />
+                    Li e aceito os Termos de Uso e Regras do Sorteio
+                  </label>
+
+                  <button type="submit" style={{
+                    marginTop: '8px', padding: '12px', background: 'linear-gradient(180deg, #facc15 0%, #ca8a04 100%)',
+                    border: '1px solid #fef08a', borderRadius: '8px', color: '#1e1b4b', fontWeight: 900, fontSize: '15px', cursor: 'pointer', textTransform: 'uppercase'
+                  }}>
+                    Cadastrar
+                  </button>
+
+                  <div style={{ textAlign: 'center', marginTop: '4px', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    Já possui conta? <strong onClick={() => setActiveModalView('LOGIN')} style={{ color: '#38bdf8', cursor: 'pointer', textDecoration: 'underline' }}>Faça login</strong>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* DEMAIS MODAIS */}
+          {activeModalView === 'DEPOSITAR' && (
+            <ModalDeposito isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} setCurrentUser={setCurrentUser} setUserTransactions={setUserTransactions} />
+          )}
+
+          {activeModalView === 'SACAR' && (
+            <ModalSaque isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} setCurrentUser={setCurrentUser} setUserTransactions={setUserTransactions} />
+          )}
+
+          {activeModalView === 'DADOS' && (
+            <UserDataModal isOpen={true} onClose={() => setActiveModalView('NONE')} currentUser={currentUser} />
+          )}
+
           {/* CONFIRMAÇÃO DE COMPRA */}
           {confirmModal && (
             <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0, 0, 0, 0.85)',
-              backdropFilter: 'blur(5px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 9999999,
-              padding: '16px',
-              boxSizing: 'border-box'
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999999, padding: '16px', boxSizing: 'border-box'
             }}>
               <div style={{
-                background: '#111318',
-                border: '1.5px solid #facc15',
-                borderRadius: '16px',
-                width: '100%',
-                maxWidth: '360px',
-                padding: '24px 20px',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(250, 204, 21, 0.3)',
-                color: '#f8fafc',
-                boxSizing: 'border-box'
+                background: '#111318', border: '1.5px solid #facc15', borderRadius: '16px', width: '100%', maxWidth: '360px',
+                padding: '24px 20px', boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(250, 204, 21, 0.3)', color: '#f8fafc'
               }}>
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  borderBottom: '1px solid rgba(250, 204, 21, 0.3)',
-                  paddingBottom: '12px',
-                  marginBottom: '16px'
-                }}>
-                  <span style={{ color: '#facc15', fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
-                    CONFIRMAÇÃO
-                  </span>
-                  <button 
-                    onClick={() => setConfirmModal(false)} 
-                    type="button" 
-                    style={{
-                      background: 'rgba(255,255,255,0.08)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      color: '#94a3b8',
-                      borderRadius: '8px',
-                      width: '30px',
-                      height: '30px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                  >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid rgba(250, 204, 21, 0.3)', paddingBottom: '12px', marginBottom: '16px' }}>
+                  <span style={{ color: '#facc15', fontSize: '16px', fontWeight: 900 }}>CONFIRMAÇÃO</span>
+                  <button onClick={() => setConfirmModal(false)} type="button" style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer' }}>
                     <X size={18} />
                   </button>
                 </div>
 
-                <div style={{
-                  fontSize: '15px',
-                  lineHeight: '1.5',
-                  color: '#e2e8f0',
-                  marginBottom: '24px',
-                  textAlign: 'center'
-                }}>
+                <div style={{ fontSize: '15px', lineHeight: '1.5', color: '#e2e8f0', marginBottom: '24px', textAlign: 'center' }}>
                   Confirmar doação para <strong style={{ color: '#facc15' }}>{ticketQty}</strong> cartelas no valor de <strong style={{ color: '#4ade80' }}>R$ {(ticketQty * betAmount).toFixed(2).replace('.', ',')}</strong>?
                 </div>
 
                 <div style={{ display: 'flex', gap: '12px' }}>
-                  <button 
-                    onClick={() => setConfirmModal(false)} 
-                    type="button"
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)',
-                      border: '1px solid #fca5a5',
-                      borderRadius: '8px',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      textTransform: 'uppercase',
-                      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
-                    }}
-                  >
-                    Não
-                  </button>
-                  <button 
-                    onClick={confirmPurchase} 
-                    type="button"
-                    style={{
-                      flex: 1,
-                      padding: '12px',
-                      background: 'linear-gradient(180deg, #16a34a 0%, #14532d 100%)',
-                      border: '1px solid #86efac',
-                      borderRadius: '8px',
-                      color: '#ffffff',
-                      fontWeight: 900,
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      textTransform: 'uppercase',
-                      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.45)'
-                    }}
-                  >
-                    Sim
-                  </button>
+                  <button onClick={() => setConfirmModal(false)} type="button" style={{
+                    flex: 1, padding: '12px', background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)', border: '1px solid #fca5a5', borderRadius: '8px', color: '#ffffff', fontWeight: 900, cursor: 'pointer'
+                  }}>Não</button>
+                  <button onClick={confirmPurchase} type="button" style={{
+                    flex: 1, padding: '12px', background: 'linear-gradient(180deg, #16a34a 0%, #14532d 100%)', border: '1px solid #86efac', borderRadius: '8px', color: '#ffffff', fontWeight: 900, cursor: 'pointer'
+                  }}>Sim</button>
                 </div>
               </div>
             </div>
@@ -1021,68 +1066,22 @@ function App() {
           {/* SUCESSO DE COMPRA */}
           {successModal && (
             <div style={{
-              position: 'fixed',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              width: '100vw',
-              height: '100vh',
-              background: 'rgba(0, 0, 0, 0.85)',
-              backdropFilter: 'blur(5px)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 9999999,
-              padding: '16px',
-              boxSizing: 'border-box'
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.85)', backdropFilter: 'blur(5px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999999, padding: '16px', boxSizing: 'border-box'
             }}>
               <div style={{
-                background: '#111318',
-                border: '1.5px solid #4ade80',
-                borderRadius: '16px',
-                width: '100%',
-                maxWidth: '350px',
-                padding: '24px 20px',
-                textAlign: 'center',
-                boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(74, 222, 128, 0.25)',
-                color: '#f8fafc',
-                boxSizing: 'border-box'
+                background: '#111318', border: '1.5px solid #4ade80', borderRadius: '16px', width: '100%', maxWidth: '350px',
+                padding: '24px 20px', textAlign: 'center', boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(74, 222, 128, 0.25)', color: '#f8fafc'
               }}>
-                <div style={{
-                  color: '#4ade80',
-                  fontSize: '16px',
-                  fontWeight: 900,
-                  letterSpacing: '1px',
-                  marginBottom: '16px',
-                  borderBottom: '1px solid rgba(74, 222, 128, 0.25)',
-                  paddingBottom: '10px'
-                }}>
+                <div style={{ color: '#4ade80', fontSize: '16px', fontWeight: 900, marginBottom: '16px', borderBottom: '1px solid rgba(74, 222, 128, 0.25)', paddingBottom: '10px' }}>
                   CARTELAS CONFIRMADAS!
                 </div>
-                <div style={{ fontSize: '15px', color: '#e2e8f0', marginBottom: '22px', lineHeight: '1.5' }}>
-                  Você recebeu <strong style={{ color: '#facc15' }}>{lastBoughtQty}</strong> cartelas.<br />
-                  🍀 Bom jogo!
+                <div style={{ fontSize: '15px', color: '#e2e8f0', marginBottom: '22px' }}>
+                  Você recebeu <strong style={{ color: '#facc15' }}>{lastBoughtQty}</strong> cartelas.<br />🍀 Bom jogo!
                 </div>
-                <button 
-                  onClick={() => setSuccessModal(false)} 
-                  type="button"
-                  style={{
-                    width: '100%',
-                    padding: '12px',
-                    background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                    border: '1px solid #7dd3fc',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontSize: '14px',
-                    fontWeight: 900,
-                    textTransform: 'uppercase',
-                    cursor: 'pointer',
-                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
-                  }}
-                >
-                  Continuar
-                </button>
+                <button onClick={() => setSuccessModal(false)} type="button" style={{
+                  width: '100%', padding: '12px', background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)', border: '1px solid #7dd3fc', borderRadius: '8px', color: '#ffffff', fontSize: '14px', fontWeight: 900, cursor: 'pointer'
+                }}>Continuar</button>
               </div>
             </div>
           )}
