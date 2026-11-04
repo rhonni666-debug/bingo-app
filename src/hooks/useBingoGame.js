@@ -84,13 +84,27 @@ export function useBingoGame() {
     return saved ? JSON.parse(saved) : null;
   });
 
-  const [cards, setCards] = useState([]);
+  const [sorteioNum, setSorteioNum] = useState(() => {
+    const savedSorteio = localStorage.getItem('bds_active_sorteio_num');
+    return savedSorteio ? Number(savedSorteio) : 120780;
+  });
+
+  // 1. CARREGA AS CARTELAS SALVAS NO LOCALSTORAGE PARA ESTE SORTEIO
+  const [cards, setCards] = useState(() => {
+    try {
+      const savedSorteio = localStorage.getItem('bds_active_sorteio_num') || 120780;
+      const savedCards = localStorage.getItem(`bds_cards_${savedSorteio}`);
+      return savedCards ? JSON.parse(savedCards) : [];
+    } catch {
+      return [];
+    }
+  });
+
   const [botCards, setBotCards] = useState([]);
   const [drawnNumbers, setDrawnNumbers] = useState([]);
   const [betAmount, setBetAmount] = useState(0.20);
   const [ticketQty, setTicketQty] = useState(5);
 
-  const [sorteioNum, setSorteioNum] = useState(120780);
   const [sorteioHoraInicio, setSorteioHoraInicio] = useState('--------');
   const [gameState, setGameState] = useState('WAITING');
   const [timeRemaining, setTimeRemaining] = useState(180);
@@ -135,12 +149,41 @@ export function useBingoGame() {
   const targetRef = useRef(currentTarget);
   const prizesRef = useRef(prizes);
   const currentUserRef = useRef(currentUser);
+  const sorteioNumRef = useRef(sorteioNum);
 
   useEffect(() => { cardsRef.current = cards; }, [cards]);
   useEffect(() => { botsRef.current = botCards; }, [botCards]);
   useEffect(() => { targetRef.current = currentTarget; }, [currentTarget]);
   useEffect(() => { prizesRef.current = prizes; }, [prizes]);
   useEffect(() => { currentUserRef.current = currentUser; }, [currentUser]);
+  useEffect(() => { sorteioNumRef.current = sorteioNum; }, [sorteioNum]);
+
+  // Sincroniza persistência do usuário logado
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('bds_logged_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('bds_logged_user');
+    }
+  }, [currentUser]);
+
+  // 2. SINCRONIZA AS CARTELAS COM O LOCALSTORAGE QUANDO O SORTEIO OU AS CARTELAS MUDAREM
+  useEffect(() => {
+    if (sorteioNum) {
+      localStorage.setItem('bds_active_sorteio_num', String(sorteioNum));
+      const savedCards = localStorage.getItem(`bds_cards_${sorteioNum}`);
+      if (savedCards) {
+        try {
+          const parsed = JSON.parse(savedCards);
+          if (Array.isArray(parsed) && parsed.length > 0 && cardsRef.current.length === 0) {
+            setCards(parsed);
+          }
+        } catch (e) {
+          console.error("Erro ao carregar cartelas do sorteio atual:", e);
+        }
+      }
+    }
+  }, [sorteioNum]);
 
   // Desbloqueio global no primeiro clique
   useEffect(() => {
@@ -174,14 +217,6 @@ export function useBingoGame() {
       window.removeEventListener('keydown', unlockAudio);
     };
   }, []);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem('bds_logged_user', JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem('bds_logged_user');
-    }
-  }, [currentUser]);
 
   const generateCard90 = useCallback(() => {
     const nums = [];
@@ -262,7 +297,14 @@ export function useBingoGame() {
 
       setGameState(estado.gameState);
       setTimeRemaining(estado.timeRemaining);
-      setSorteioNum(estado.sorteioNum);
+
+      // Se mudou o número do sorteio vindo do servidor, limpa as cartelas da rodada passada
+      if (estado.sorteioNum && estado.sorteioNum !== sorteioNumRef.current) {
+        setSorteioNum(estado.sorteioNum);
+        const cartelasNovoSorteio = localStorage.getItem(`bds_cards_${estado.sorteioNum}`);
+        setCards(cartelasNovoSorteio ? JSON.parse(cartelasNovoSorteio) : []);
+      }
+
       setSorteioHoraInicio(estado.sorteioHoraInicio);
 
       const numerosNormalizados = (estado.drawnNumbers || []).map(n => Number(n));
@@ -411,6 +453,8 @@ export function useBingoGame() {
               setTimeRemaining(180);
               setDrawnNumbers([]);
               setCards([]);
+              // Limpa as cartelas salvas localmente apenas após a rodada fechar definitivamente
+              localStorage.removeItem(`bds_cards_${sorteioNumRef.current}`);
               setBotCards([]);
               botsRef.current = [];
               resetRoundStates();
@@ -435,7 +479,7 @@ export function useBingoGame() {
       socket.off('sync-timer');
       socket.off('nova-pedra-central');
     };
-  }, [computeMissingForTarget, generateCard90, resetRoundStates]);
+  }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
   const updateQty = (delta) => setTicketQty(prev => Math.max(1, prev + delta));
   const setQtyDirect = (val) => setTicketQty(val);
@@ -468,7 +512,16 @@ export function useBingoGame() {
       numbers: generateCard90()
     }));
 
-    setCards(prev => [...prev, ...newCards]);
+    // 3. ATUALIZA O ESTADO E PERSISTE NO LOCALSTORAGE PARA O SORTEIO ATUAL
+    setCards(prev => {
+      const updatedCards = [...prev, ...newCards];
+      try {
+        localStorage.setItem(`bds_cards_${sorteioNumRef.current}`, JSON.stringify(updatedCards));
+      } catch (err) {
+        console.error("Erro ao salvar cartelas no localStorage:", err);
+      }
+      return updatedCards;
+    });
 
     setUserTransactions(prev => [
       {
