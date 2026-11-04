@@ -651,9 +651,10 @@ function App() {
             </div>
 
             <div className="bds-quick-qty-bar">
-              {[5, 10, 15, 20, 25, 30, 35, 40].map(v => (
-                <button key={v} onClick={() => setQtyDirect(v)} type="button" className="bds-qty-chip">{v}</button>
-              ))}
+              {/* ALTERE PARA: */}
+{[5, 10, 15, 20, 25, 30].map(v => (
+  <button key={v} onClick={() => setQtyDirect(v)} type="button" className="bds-qty-chip">{v}</button>
+))}
             </div>
 
             <div className="bds-buy-row">

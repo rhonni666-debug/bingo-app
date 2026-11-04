@@ -339,7 +339,7 @@ export function useBingoGame() {
       }
 
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = 8; // EXATAMENTE 8 BOTS FIXOS
+        const numBots = 10; // EXATAMENTE 10 BOTS FIXOS
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
