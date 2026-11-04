@@ -526,7 +526,7 @@ export function useBingoGame() {
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
   // CONTROLES DE QUANTIDADE COM LIMITE DE 50 CARTELAS
-  const LIMITE_CARTELAS = 50;
+  const LIMITE_CARTELAS = 40;
   const updateQty = (delta) => setTicketQty(prev => Math.min(LIMITE_CARTELAS, Math.max(1, prev + delta)));
   const setQtyDirect = (val) => setTicketQty(Math.min(LIMITE_CARTELAS, val));
 
