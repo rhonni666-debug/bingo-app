@@ -2,6 +2,7 @@ import ModalDeposito from './components/ModalDeposito';
 import ModalSaque from './components/ModalSaque';
 import UserDataModal from './components/UserDataModal';
 import React, { useState } from 'react';
+import { createPortal } from 'react-dom';
 import BingoCard from './components/BingoCard';
 import MatchHistoryModal from './components/MatchHistoryModal';
 import HowToPlayModal from './components/HowToPlayModal';
@@ -896,178 +897,6 @@ function App() {
            </div>
         )}
 
-        {/* MODAL DE CONFIRMAÇÃO DE COMPRA (FIXO NO CENTRO DA TELA) */}
-        {confirmModal && (
-          <div style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 999999,
-            padding: '16px'
-          }}>
-            <div style={{
-              background: '#111318',
-              border: '1.5px solid #facc15',
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '360px',
-              padding: '24px 20px',
-              boxShadow: '0 20px 45px rgba(0,0,0,0.95), 0 0 25px rgba(250, 204, 21, 0.25)',
-              color: '#f8fafc',
-              boxSizing: 'border-box'
-            }}>
-              <div style={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid rgba(250, 204, 21, 0.3)',
-                paddingBottom: '12px',
-                marginBottom: '16px'
-              }}>
-                <span style={{ color: '#facc15', fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
-                  CONFIRMAÇÃO
-                </span>
-                <button 
-                  onClick={() => setConfirmModal(false)} 
-                  type="button" 
-                  style={{
-                    background: 'rgba(255,255,255,0.08)',
-                    border: '1px solid rgba(255,255,255,0.15)',
-                    color: '#94a3b8',
-                    borderRadius: '8px',
-                    width: '30px',
-                    height: '30px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
-                >
-                  <X size={18} />
-                </button>
-              </div>
-
-              <div style={{
-                fontSize: '15px',
-                lineHeight: '1.5',
-                color: '#e2e8f0',
-                marginBottom: '24px',
-                textAlign: 'center'
-              }}>
-                Confirmar doação para <strong style={{ color: '#facc15' }}>{ticketQty}</strong> cartelas no valor de <strong style={{ color: '#4ade80' }}>R$ {(ticketQty * betAmount).toFixed(2).replace('.', ',')}</strong>?
-              </div>
-
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <button 
-                  onClick={() => setConfirmModal(false)} 
-                  type="button"
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)',
-                    border: '1px solid #fca5a5',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontWeight: 900,
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
-                  }}
-                >
-                  Não
-                </button>
-                <button 
-                  onClick={confirmPurchase} 
-                  type="button"
-                  style={{
-                    flex: 1,
-                    padding: '12px',
-                    background: 'linear-gradient(180deg, #16a34a 0%, #14532d 100%)',
-                    border: '1px solid #86efac',
-                    borderRadius: '8px',
-                    color: '#ffffff',
-                    fontWeight: 900,
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    textTransform: 'uppercase',
-                    boxShadow: '0 4px 12px rgba(22, 163, 74, 0.45)'
-                  }}
-                >
-                  Sim
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* MODAL DE SUCESSO (FIXO NO CENTRO DA TELA) */}
-        {successModal && (
-          <div style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0, 0, 0, 0.85)',
-            backdropFilter: 'blur(5px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 999999,
-            padding: '16px'
-          }}>
-            <div style={{
-              background: '#111318',
-              border: '1.5px solid #4ade80',
-              borderRadius: '16px',
-              width: '100%',
-              maxWidth: '350px',
-              padding: '24px 20px',
-              textAlign: 'center',
-              boxShadow: '0 20px 45px rgba(0,0,0,0.95), 0 0 25px rgba(74, 222, 128, 0.25)',
-              color: '#f8fafc',
-              boxSizing: 'border-box'
-            }}>
-              <div style={{
-                color: '#4ade80',
-                fontSize: '16px',
-                fontWeight: 900,
-                letterSpacing: '1px',
-                marginBottom: '16px',
-                borderBottom: '1px solid rgba(74, 222, 128, 0.25)',
-                paddingBottom: '10px'
-              }}>
-                CARTELAS CONFIRMADAS!
-              </div>
-              <div style={{ fontSize: '15px', color: '#e2e8f0', marginBottom: '22px', lineHeight: '1.5' }}>
-                Você recebeu <strong style={{ color: '#facc15' }}>{lastBoughtQty}</strong> cartelas.<br />
-                🍀 Bom jogo!
-              </div>
-              <button 
-                onClick={() => setSuccessModal(false)} 
-                type="button"
-                style={{
-                  width: '100%',
-                  padding: '12px',
-                  background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                  border: '1px solid #7dd3fc',
-                  borderRadius: '8px',
-                  color: '#ffffff',
-                  fontSize: '14px',
-                  fontWeight: 900,
-                  textTransform: 'uppercase',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
-                }}
-              >
-                Continuar
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* MODAL DE REGISTRO */}
         {activeModalView === 'REGISTER' && (
           <div style={{
@@ -1238,6 +1067,197 @@ function App() {
         />
 
       </div>
+
+      {/* PORTAL: RENDERIZA OS MODAIS DIRETAMENTE NO BODY (IMPOSSÍVEL CAIR PARA BAIXO COM AS CARTELAS) */}
+      {typeof document !== 'undefined' && createPortal(
+        <>
+          {/* CONFIRMAÇÃO DE COMPRA */}
+          {confirmModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999999,
+              padding: '16px',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{
+                background: '#111318',
+                border: '1.5px solid #facc15',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '360px',
+                padding: '24px 20px',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(250, 204, 21, 0.3)',
+                color: '#f8fafc',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  borderBottom: '1px solid rgba(250, 204, 21, 0.3)',
+                  paddingBottom: '12px',
+                  marginBottom: '16px'
+                }}>
+                  <span style={{ color: '#facc15', fontSize: '16px', fontWeight: 900, letterSpacing: '1px' }}>
+                    CONFIRMAÇÃO
+                  </span>
+                  <button 
+                    onClick={() => setConfirmModal(false)} 
+                    type="button" 
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      color: '#94a3b8',
+                      borderRadius: '8px',
+                      width: '30px',
+                      height: '30px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+
+                <div style={{
+                  fontSize: '15px',
+                  lineHeight: '1.5',
+                  color: '#e2e8f0',
+                  marginBottom: '24px',
+                  textAlign: 'center'
+                }}>
+                  Confirmar doação para <strong style={{ color: '#facc15' }}>{ticketQty}</strong> cartelas no valor de <strong style={{ color: '#4ade80' }}>R$ {(ticketQty * betAmount).toFixed(2).replace('.', ',')}</strong>?
+                </div>
+
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    onClick={() => setConfirmModal(false)} 
+                    type="button"
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: 'linear-gradient(180deg, #dc2626 0%, #991b1b 100%)',
+                      border: '1px solid #fca5a5',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      boxShadow: '0 4px 12px rgba(220, 38, 38, 0.35)'
+                    }}
+                  >
+                    Não
+                  </button>
+                  <button 
+                    onClick={confirmPurchase} 
+                    type="button"
+                    style={{
+                      flex: 1,
+                      padding: '12px',
+                      background: 'linear-gradient(180deg, #16a34a 0%, #14532d 100%)',
+                      border: '1px solid #86efac',
+                      borderRadius: '8px',
+                      color: '#ffffff',
+                      fontWeight: 900,
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      textTransform: 'uppercase',
+                      boxShadow: '0 4px 12px rgba(22, 163, 74, 0.45)'
+                    }}
+                  >
+                    Sim
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SUCESSO DE COMPRA */}
+          {successModal && (
+            <div style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              width: '100vw',
+              height: '100vh',
+              background: 'rgba(0, 0, 0, 0.85)',
+              backdropFilter: 'blur(5px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 9999999,
+              padding: '16px',
+              boxSizing: 'border-box'
+            }}>
+              <div style={{
+                background: '#111318',
+                border: '1.5px solid #4ade80',
+                borderRadius: '16px',
+                width: '100%',
+                maxWidth: '350px',
+                padding: '24px 20px',
+                textAlign: 'center',
+                boxShadow: '0 20px 50px rgba(0,0,0,0.98), 0 0 25px rgba(74, 222, 128, 0.25)',
+                color: '#f8fafc',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{
+                  color: '#4ade80',
+                  fontSize: '16px',
+                  fontWeight: 900,
+                  letterSpacing: '1px',
+                  marginBottom: '16px',
+                  borderBottom: '1px solid rgba(74, 222, 128, 0.25)',
+                  paddingBottom: '10px'
+                }}>
+                  CARTELAS CONFIRMADAS!
+                </div>
+                <div style={{ fontSize: '15px', color: '#e2e8f0', marginBottom: '22px', lineHeight: '1.5' }}>
+                  Você recebeu <strong style={{ color: '#facc15' }}>{lastBoughtQty}</strong> cartelas.<br />
+                  🍀 Bom jogo!
+                </div>
+                <button 
+                  onClick={() => setSuccessModal(false)} 
+                  type="button"
+                  style={{
+                    width: '100%',
+                    padding: '12px',
+                    background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                    border: '1px solid #7dd3fc',
+                    borderRadius: '8px',
+                    color: '#ffffff',
+                    fontSize: '14px',
+                    fontWeight: 900,
+                    textTransform: 'uppercase',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(2, 132, 199, 0.4)'
+                  }}
+                >
+                  Continuar
+                </button>
+              </div>
+            </div>
+          )}
+        </>,
+        document.body
+      )}
+
     </div>
   );
 }
