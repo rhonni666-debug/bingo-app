@@ -46,7 +46,8 @@ let cartelasAtivasPorSorteio = {};
 let estadoGlobal = {
   gameState: 'WAITING',
   timeRemaining: 180,
-  sorteioNum: 120780,
+  sorteioNum: Math.floor(100000 + Math.random() * 900000),
+  // ...
   sorteioHoraInicio: 'Sincronizando...',
   drawnNumbers: [],
   pedraAtual: null,
