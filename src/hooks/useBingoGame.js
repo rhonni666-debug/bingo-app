@@ -61,7 +61,6 @@ function tocarPedraAudio(pedra) {
   }
 }
 
-// Dispara a voz do narrador e a música Tema da Vitória (vitoria.mp3) juntas
 function anunciarPremio(tipoPremio) {
   const nomeAudioVoz = tipoPremio === 'KUADRA' ? 'quadra.mp3' :
                        tipoPremio === 'KINA'   ? 'quina.mp3' :
@@ -95,7 +94,6 @@ export function useBingoGame() {
     return savedSorteio ? Number(savedSorteio) : 120780;
   });
 
-  // Carrega as cartelas do cache local imediatamente para evitar sumiço no F5
   const [cards, setCards] = useState(() => {
     try {
       const savedSorteio = localStorage.getItem('bds_active_sorteio_num') || 120780;
@@ -108,8 +106,7 @@ export function useBingoGame() {
 
   const [botCards, setBotCards] = useState([]);
   const [drawnNumbers, setDrawnNumbers] = useState([]);
-  const [betAmount, setBetAmount] = useState(0.40
-  );
+  const [betAmount, setBetAmount] = useState(0.40);
   const [ticketQty, setTicketQty] = useState(5);
 
   const [sorteioHoraInicio, setSorteioHoraInicio] = useState('--------');
@@ -146,7 +143,6 @@ export function useBingoGame() {
   });
   const [leaderboard, setLeaderboard] = useState([]);
 
-  // Trava de fases
   const isPausedRef = useRef(false);
   const roundFinishedRef = useRef(false);
   const stagesWonRef = useRef({ KUADRA: false, KINA: false, KENO: false });
@@ -165,7 +161,6 @@ export function useBingoGame() {
   useEffect(() => { currentUserRef.current = currentUser; }, [currentUser]);
   useEffect(() => { sorteioNumRef.current = sorteioNum; }, [sorteioNum]);
 
-  // Sincroniza persistência do usuário logado
   useEffect(() => {
     if (currentUser) {
       localStorage.setItem('bds_logged_user', JSON.stringify(currentUser));
@@ -174,7 +169,6 @@ export function useBingoGame() {
     }
   }, [currentUser]);
 
-  // Sincroniza as cartelas no localStorage quando o sorteioNum mudar
   useEffect(() => {
     if (sorteioNum) {
       localStorage.setItem('bds_active_sorteio_num', String(sorteioNum));
@@ -192,7 +186,6 @@ export function useBingoGame() {
     }
   }, [sorteioNum]);
 
-  // Solicita as cartelas ativas diretamente ao servidor central pelo UID do usuário
   useEffect(() => {
     if (currentUser?.uid && sorteioNum) {
       socket.emit('recuperar-minhas-cartelas', {
@@ -202,7 +195,6 @@ export function useBingoGame() {
     }
   }, [currentUser?.uid, sorteioNum]);
 
-  // Desbloqueio global de áudio no primeiro clique
   useEffect(() => {
     const unlockAudio = () => {
       if (!audioUnlocked) {
@@ -235,13 +227,26 @@ export function useBingoGame() {
     };
   }, []);
 
-  const generateCard90 = useCallback(() => {
-    const nums = [];
-    while (nums.length < 15) {
-      const r = Math.floor(Math.random() * 90) + 1;
-      if (!nums.includes(r)) nums.push(r);
-    }
-    nums.sort((a, b) => a - b);
+  // SISTEMA ANTI-DUPLICAÇÃO DE CARTELAS
+  const generateCard90 = useCallback((todasCartelasExistentes = []) => {
+    const isCartelaRepetida = (novaCartela) => {
+      const novaStr = novaCartela.sort((a, b) => a - b).join(',');
+      return todasCartelasExistentes.some(c => c.numbers.join(',') === novaStr);
+    };
+
+    let nums = [];
+    let tentativas = 0;
+
+    do {
+      nums = [];
+      while (nums.length < 15) {
+        const r = Math.floor(Math.random() * 90) + 1;
+        if (!nums.includes(r)) nums.push(r);
+      }
+      nums.sort((a, b) => a - b);
+      tentativas++;
+    } while (isCartelaRepetida(nums) && tentativas < 100);
+
     return nums;
   }, []);
 
@@ -326,7 +331,6 @@ export function useBingoGame() {
       const numerosNormalizados = (estado.drawnNumbers || []).map(n => Number(n));
       setDrawnNumbers(numerosNormalizados);
 
-      // Sincroniza os prêmios em tempo real vindos do servidor
       const premiosServidor = estado.premios || estado.prizes;
       if (premiosServidor) {
         setPrizes({
@@ -338,8 +342,9 @@ export function useBingoGame() {
         });
       }
 
+      // GERAÇÃO DE BOTS COM ANTI-DUPLICAÇÃO
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = 10; // EXATAMENTE 10 BOTS FIXOS
+        const numBots = 10;
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
@@ -347,11 +352,13 @@ export function useBingoGame() {
         let botBaseId = Math.floor(100 + Math.random() * 2000);
 
         botsEscolhidos.forEach(nomeBot => {
-          for (let i = 0; i < 17; i++) { // EXATAMENTE 17 CARTELAS CADA BOT (TOTAL 136)
+          for (let i = 0; i < 13; i++) {
+            // Passa as cartelas ativas para evitar qualquer repetição
+            const cartelaUnica = generateCard90([...cardsRef.current, ...novasCartelasBots]);
             novasCartelasBots.push({
               id: botBaseId++,
               player: nomeBot,
-              numbers: generateCard90()
+              numbers: cartelaUnica
             });
           }
         });
@@ -417,6 +424,7 @@ export function useBingoGame() {
 
       const winnerCards = evaluated.filter(c => c.isWinner);
 
+      // TRAVA DE FASE REFORÇADA PARA EVITAR VÁRIOS GANHADORES ACUMULADOS
       if (winnerCards.length > 0 && !isPausedRef.current && !stagesWonRef.current[activeTarget]) {
         isPausedRef.current = true;
         stagesWonRef.current[activeTarget] = true;
@@ -530,8 +538,8 @@ export function useBingoGame() {
     };
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
-  // CONTROLES DE QUANTIDADE COM LIMITE DE 50 CARTELAS
-  const LIMITE_CARTELAS = 40;
+  // CONTROLES DE QUANTIDADE COM LIMITE DE 30 CARTELAS PARA O UTILIZADOR
+  const LIMITE_CARTELAS = 30;
   const updateQty = (delta) => setTicketQty(prev => Math.min(LIMITE_CARTELAS, Math.max(1, prev + delta)));
   const setQtyDirect = (val) => setTicketQty(Math.min(LIMITE_CARTELAS, val));
 
@@ -546,7 +554,6 @@ export function useBingoGame() {
   const confirmPurchase = () => {
     if (!currentUser) return;
 
-    // TRAVA DE COMPRA - NÃO PERMITE PASSAR DE 50 CARTELAS NO TOTAL
     if (cards.length + ticketQty > LIMITE_CARTELAS) {
       alert(`Você só pode ter no máximo ${LIMITE_CARTELAS} cartelas por rodada!`);
       setConfirmModal(false);
@@ -565,13 +572,18 @@ export function useBingoGame() {
     setCurrentUser(prev => ({ ...prev, balance: newBalance }));
 
     const baseId = Math.floor(1370 + Math.random() * 50);
-    const newCards = Array.from({ length: ticketQty }).map((_, idx) => ({
-      id: baseId + idx,
-      player: currentUser.username,
-      numbers: generateCard90()
-    }));
+    const newCards = [];
+    
+    // GERA CARTELAS COM ANTI-DUPLICAÇÃO PARA O UTILIZADOR TAMBÉM
+    for (let i = 0; i < ticketQty; i++) {
+      const cartelaUnica = generateCard90([...cards, ...newCards, ...botsRef.current]);
+      newCards.push({
+        id: baseId + i,
+        player: currentUser.username,
+        numbers: cartelaUnica
+      });
+    }
 
-    // Notifica o servidor central na Render para armazenar no UID do jogador e subir os prêmios
     socket.emit('comprar-cartelas', {
       uid: currentUser.uid,
       sorteioNum: sorteioNumRef.current,
@@ -580,7 +592,6 @@ export function useBingoGame() {
       cards: newCards
     });
 
-    // Salva no estado e no localStorage simultaneamente
     setCards(prev => {
       const updatedCards = [...prev, ...newCards];
       try {
