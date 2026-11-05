@@ -21,7 +21,6 @@ const REAL_PLAYERS_POOL = [
 'Windows98','Penha2687','Queixotatto','linsducorte','ElderMecanico','gbsilva','biaMorenana','22737373',
 ];
 
-// Instâncias globais de áudio
 const globalAudio = new Audio();
 globalAudio.preload = 'auto';
 
@@ -133,16 +132,20 @@ export function useBingoGame() {
   });
 
   const [winnersList, setWinnersList] = useState({ kuadra: [], kina: [], keno: [] });
+  
+  // HISTÓRICO DAS PARTIDAS
   const [matchHistory, setMatchHistory] = useState(() => {
     const saved = localStorage.getItem('bds_match_history');
     return saved ? JSON.parse(saved) : [];
   });
+  
   const [userTransactions, setUserTransactions] = useState(() => {
     const saved = localStorage.getItem('bds_user_tx');
     return saved ? JSON.parse(saved) : [
       { date: '28/10/2026 13:22:06', type: 'DEPÓSITO', value: 5.00, balance: 5.00 }
     ];
   });
+  
   const [leaderboard, setLeaderboard] = useState([]);
 
   const isPausedRef = useRef(false);
@@ -155,6 +158,9 @@ export function useBingoGame() {
   const prizesRef = useRef(prizes);
   const currentUserRef = useRef(currentUser);
   const sorteioNumRef = useRef(sorteioNum);
+  
+  // REFERÊNCIA PARA OS VENCEDORES (Necessário para montar o histórico corretamente)
+  const winnersListRef = useRef(winnersList);
 
   useEffect(() => { cardsRef.current = cards; }, [cards]);
   useEffect(() => { botsRef.current = botCards; }, [botCards]);
@@ -162,6 +168,7 @@ export function useBingoGame() {
   useEffect(() => { prizesRef.current = prizes; }, [prizes]);
   useEffect(() => { currentUserRef.current = currentUser; }, [currentUser]);
   useEffect(() => { sorteioNumRef.current = sorteioNum; }, [sorteioNum]);
+  useEffect(() => { winnersListRef.current = winnersList; }, [winnersList]);
 
   useEffect(() => {
     if (currentUser) {
@@ -341,7 +348,6 @@ export function useBingoGame() {
         });
       }
 
-      // GERAÇÃO DOS BOTS (Se a lista estiver vazia)
       let currentBots = botsRef.current;
       if (estado.gameState === 'DRAWING' && currentBots.length === 0) {
         const numBots = 14;
@@ -367,14 +373,12 @@ export function useBingoGame() {
         setBotCards(novasCartelasBots);
       }
 
-      // NOVO SISTEMA DE FAST-FORWARD: Corrige erro de 150 vencedores no F5 / Entrada Tardia
       if (estado.gameState === 'DRAWING' && numerosNormalizados.length > 0 && targetRef.current === 'KUADRA' && !stagesWonRef.current.KUADRA) {
         const allCardsToSimulate = [...cardsRef.current, ...currentBots];
         let simTarget = 'KUADRA';
         const simStages = { KUADRA: false, KINA: false, KENO: false };
         const simDrawn = [];
 
-        // Simula bola a bola super rápido para descobrir se a Quadra/Quina já saíram no passado
         for (const ball of numerosNormalizados) {
           simDrawn.push(ball);
           if (!simStages[simTarget]) {
@@ -401,7 +405,7 @@ export function useBingoGame() {
         stagesWonRef.current = simStages;
         targetRef.current = simTarget;
         setCurrentTarget(simTarget);
-        isPausedRef.current = false; // Liberta a trava caso estivesse bloqueado
+        isPausedRef.current = false;
       }
     };
 
@@ -471,14 +475,16 @@ export function useBingoGame() {
 
         const prizePerWinner = +(totalPrize / winnerCards.length).toFixed(2);
         const chavePremio = activeTarget.toLowerCase();
+        
+        const novosVencedoresDestatapa = winnerCards.map(w => ({
+          id: w.id,
+          player: w.player,
+          prize: prizePerWinner
+        }));
 
         setWinnersList(prev => ({
           ...prev,
-          [chavePremio]: winnerCards.map(w => ({
-            id: w.id,
-            player: w.player,
-            prize: prizePerWinner
-          }))
+          [chavePremio]: novosVencedoresDestatapa
         }));
 
         if (currentUserRef.current) {
@@ -512,6 +518,28 @@ export function useBingoGame() {
         });
 
         if (activeTarget === 'KENO') {
+          // ==========================================
+          // AQUI SALVAMOS O HISTÓRICO DA PARTIDA TODA
+          // ==========================================
+          const finalWinners = { ...winnersListRef.current };
+          finalWinners.keno = novosVencedoresDestatapa;
+          
+          const newHistoryRecord = {
+            sorteio: sorteioNumRef.current,
+            data: new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
+            hora: new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }),
+            kuadra: finalWinners.kuadra || [],
+            kina: finalWinners.kina || [],
+            keno: finalWinners.keno || []
+          };
+
+          setMatchHistory(prev => {
+            const atualizado = [newHistoryRecord, ...prev].slice(0, 30); // Guarda as últimas 30 partidas
+            localStorage.setItem('bds_match_history', JSON.stringify(atualizado));
+            return atualizado;
+          });
+          // ==========================================
+
           roundFinishedRef.current = true;
           globalAudio.pause();
           confetti({ particleCount: 500, spread: 180, origin: { y: 0.3 } });

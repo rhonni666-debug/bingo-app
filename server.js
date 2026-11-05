@@ -61,12 +61,12 @@ let estadoGlobal = {
   }
 };
 
+// CORREÇÃO: HORA COM FUSO HORÁRIO DE BRASÍLIA
 function formatTargetDateTime() {
   const date = new Date(Date.now() + estadoGlobal.timeRemaining * 1000);
-  const dia = date.getDate().toString().padStart(2, '0');
-  const mes = (date.getMonth() + 1).toString().padStart(2, '0');
-  const hora = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-  return `${dia}/${mes}-${hora}`;
+  const dataStr = date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
+  const horaStr = date.toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' });
+  return `${dataStr}-${horaStr}`;
 }
 estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
 
@@ -224,7 +224,7 @@ app.post('/api/pix', async (req, res) => {
       amount: valorFinal,
       user: username || 'Jogador',
       status: 'Gerado',
-      hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+      hora: new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' })
     };
     historicoEntradas.unshift(novaEntrada);
     if (historicoEntradas.length > 100) historicoEntradas.pop();
@@ -258,8 +258,8 @@ const tratarSolicitacaoSaque = (req, res) => {
       valor: Number(valor), 
       tipoChave: tipoChave || 'Chave PIX', 
       chavePix: String(chavePix).trim(), 
-      hora: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }), 
-      data: new Date().toLocaleDateString('pt-BR'),
+      hora: new Date().toLocaleTimeString('pt-BR', { timeZone: 'America/Sao_Paulo', hour: '2-digit', minute: '2-digit' }), 
+      data: new Date().toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
       status: 'Pendente' 
     };
 
@@ -343,7 +343,6 @@ io.on('connection', (socket) => {
     }
   });
 
-  // COMANDOS DO PAINEL ADMIN
   socket.on('pedir-dados-admin', (senha) => {
     if (senha === 'boteco2026') {
       socket.emit('admin-update', { saques: historicoSaques, entradas: historicoEntradas });
