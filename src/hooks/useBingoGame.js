@@ -351,7 +351,7 @@ export function useBingoGame() {
 
       let currentBots = botsRef.current;
       if (estado.gameState === 'DRAWING' && currentBots.length === 0) {
-        const numBots = 14;
+        const numBots = 18;
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
