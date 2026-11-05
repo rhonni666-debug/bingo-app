@@ -344,7 +344,7 @@ export function useBingoGame() {
 
       // GERAÇÃO DE BOTS COM ANTI-DUPLICAÇÃO
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = 10;
+        const numBots = 14;
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
