@@ -1,6 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from 'react'; 
+import { useState, useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { io } from 'socket.io-client';
+import { doc, updateDoc } from 'firebase/firestore';
+import { db } from '../firebase'; // Verifique se o caminho para o seu ficheiro firebase.js está correto
 
 const socket = io('https://bingo-app-16i4.onrender.com', {
   transports: ['websocket', 'polling']
@@ -342,9 +344,9 @@ export function useBingoGame() {
         });
       }
 
-      // GERAÇÃO DE BOTS COM ANTI-DUPLICAÇÃO
+      // GERAÇÃO DE 14 BOTS COM ANTI-DUPLICAÇÃO
       if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = 14;
+        const numBots = 14; // AGORA SÃO 14 BOTS POR PARTIDA
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
@@ -353,7 +355,6 @@ export function useBingoGame() {
 
         botsEscolhidos.forEach(nomeBot => {
           for (let i = 0; i < 13; i++) {
-            // Passa as cartelas ativas para evitar qualquer repetição
             const cartelaUnica = generateCard90([...cardsRef.current, ...novasCartelasBots]);
             novasCartelasBots.push({
               id: botBaseId++,
@@ -424,7 +425,7 @@ export function useBingoGame() {
 
       const winnerCards = evaluated.filter(c => c.isWinner);
 
-      // TRAVA DE FASE REFORÇADA PARA EVITAR VÁRIOS GANHADORES ACUMULADOS
+      // TRAVA DE FASE REFORÇADA
       if (winnerCards.length > 0 && !isPausedRef.current && !stagesWonRef.current[activeTarget]) {
         isPausedRef.current = true;
         stagesWonRef.current[activeTarget] = true;
@@ -538,8 +539,7 @@ export function useBingoGame() {
     };
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
-  // CONTROLES DE QUANTIDADE COM LIMITE DE 30 CARTELAS PARA O UTILIZADOR
-  const LIMITE_CARTELAS = 30;
+  const LIMITE_CARTELAS = 30; // LIMITE DE CARTELAS DO UTILIZADOR
   const updateQty = (delta) => setTicketQty(prev => Math.min(LIMITE_CARTELAS, Math.max(1, prev + delta)));
   const setQtyDirect = (val) => setTicketQty(Math.min(LIMITE_CARTELAS, val));
 
@@ -551,7 +551,7 @@ export function useBingoGame() {
     setConfirmModal(true);
   };
 
-  const confirmPurchase = () => {
+  const confirmPurchase = async () => {
     if (!currentUser) return;
 
     if (cards.length + ticketQty > LIMITE_CARTELAS) {
@@ -569,12 +569,23 @@ export function useBingoGame() {
     }
 
     const newBalance = +(currentUser.balance - cost).toFixed(2);
+
+    // ATUALIZAÇÃO DO SALDO NO FIREBASE
+    try {
+      const userRef = doc(db, 'users', currentUser.uid);
+      await updateDoc(userRef, { balance: newBalance });
+    } catch (error) {
+      console.error("Erro ao atualizar o saldo no banco de dados:", error);
+      alert("Falha ao comunicar com o servidor. A compra não foi concluída.");
+      setConfirmModal(false);
+      return;
+    }
+
     setCurrentUser(prev => ({ ...prev, balance: newBalance }));
 
     const baseId = Math.floor(1370 + Math.random() * 50);
     const newCards = [];
     
-    // GERA CARTELAS COM ANTI-DUPLICAÇÃO PARA O UTILIZADOR TAMBÉM
     for (let i = 0; i < ticketQty; i++) {
       const cartelaUnica = generateCard90([...cards, ...newCards, ...botsRef.current]);
       newCards.push({
