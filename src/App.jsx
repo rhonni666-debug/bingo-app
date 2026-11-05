@@ -647,7 +647,7 @@ function App() {
 
             <div className="bds-halloween-banner">
               <div className="h-banner-title">PARTIDA ESPECIAL DE HALLOWEEN</div>
-              <div className="h-banner-sub">+31/10 ÀS 22H00 • R$ 10.000,00 NO BINGO</div>
+              <div className="h-banner-sub">+31/10 ÀS 22H00 • R$ 500,00 NO BINGO</div>
             </div>
 
             <div className="bds-quick-qty-bar">
