@@ -61,7 +61,6 @@ let estadoGlobal = {
   }
 };
 
-// CORREÇÃO: HORA COM FUSO HORÁRIO DE BRASÍLIA
 function formatTargetDateTime() {
   const date = new Date(Date.now() + estadoGlobal.timeRemaining * 1000);
   const dataStr = date.toLocaleDateString('pt-BR', { timeZone: 'America/Sao_Paulo', day: '2-digit', month: '2-digit' });
@@ -126,6 +125,20 @@ function iniciarSorteioCentral() {
   estadoGlobal.gameState = 'DRAWING';
   estadoGlobal.drawnNumbers = [];
   estadoGlobal.pedraAtual = null;
+
+  // INJETA O VALOR DOS BOTS NOS PRÊMIOS ASSIM QUE O JOGO COMEÇA (14 bots * 13 cartelas * 0.40)
+  const numBots = 14;
+  const cartelasPorBot = 13;
+  const precoCartela = 0.40;
+  const valorGastoBots = numBots * cartelasPorBot * precoCartela;
+
+  if (valorGastoBots > 0) {
+    estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGastoBots * 0.40)).toFixed(2);
+    estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGastoBots * 0.15)).toFixed(2);
+    estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGastoBots * 0.15)).toFixed(2);
+    estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGastoBots * 0.05)).toFixed(2);
+    estadoGlobal.totalCartelasVendidas += (numBots * cartelasPorBot);
+  }
   
   io.emit('estado-jogo', estadoGlobal);
 
@@ -332,11 +345,12 @@ io.on('connection', (socket) => {
       cartelasAtivasPorSorteio[sorteioNum][uid].push(...newCards);
     }
 
+    // ARREDONDA A COMPRA DO JOGADOR PARA EVITAR BUGS NA INTERFACE
     if (valorGasto > 0) {
-      estadoGlobal.premios.keno += valorGasto * 0.40;
-      estadoGlobal.premios.kuadra += valorGasto * 0.15;
-      estadoGlobal.premios.kina += valorGasto * 0.15;
-      estadoGlobal.premios.acumulado += valorGasto * 0.05;
+      estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGasto * 0.40)).toFixed(2);
+      estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGasto * 0.15)).toFixed(2);
+      estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGasto * 0.15)).toFixed(2);
+      estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGasto * 0.05)).toFixed(2);
       estadoGlobal.totalCartelasVendidas += quantidade;
 
       io.emit('estado-jogo', estadoGlobal);
