@@ -359,7 +359,7 @@ export function useBingoGame() {
         let botBaseId = Math.floor(100 + Math.random() * 2000);
 
         botsEscolhidos.forEach(nomeBot => {
-          for (let i = 0; i < 13; i++) {
+          for (let i = 0; i < 16; i++) {
             const cartelaUnica = generateCard90([...cardsRef.current, ...novasCartelasBots]);
             novasCartelasBots.push({
               id: botBaseId++,

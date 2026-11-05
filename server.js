@@ -129,7 +129,7 @@ function iniciarSorteioCentral() {
 
   // INJETA O VALOR DOS BOTS NOS PRÊMIOS ASSIM QUE O JOGO COMEÇA (14 bots * 13 cartelas * 0.40)
   const numBots = 14;
-  const cartelasPorBot = 13;
+  const cartelasPorBot = 16;
   const precoCartela = 0.40;
   const valorGastoBots = numBots * cartelasPorBot * precoCartela;
 
