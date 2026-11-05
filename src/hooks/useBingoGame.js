@@ -122,6 +122,7 @@ export function useBingoGame() {
   const [activeModalView, setActiveModalView] = useState('NONE');
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
   const [rulesModalOpen, setRulesModalOpen] = useState(false);
+  const [isPurchasing, setIsPurchasing] = useState(false); // <-- TRAVA ADICIONADA AQUI
 
   const [prizes, setPrizes] = useState({
     kuadra: 15.00,
@@ -518,9 +519,6 @@ export function useBingoGame() {
         });
 
         if (activeTarget === 'KENO') {
-          // ==========================================
-          // AQUI SALVAMOS O HISTÓRICO DA PARTIDA TODA
-          // ==========================================
           const finalWinners = { ...winnersListRef.current };
           finalWinners.keno = novosVencedoresDestatapa;
           
@@ -534,11 +532,10 @@ export function useBingoGame() {
           };
 
           setMatchHistory(prev => {
-            const atualizado = [newHistoryRecord, ...prev].slice(0, 30); // Guarda as últimas 30 partidas
+            const atualizado = [newHistoryRecord, ...prev].slice(0, 30);
             localStorage.setItem('bds_match_history', JSON.stringify(atualizado));
             return atualizado;
           });
-          // ==========================================
 
           roundFinishedRef.current = true;
           globalAudio.pause();
@@ -615,11 +612,14 @@ export function useBingoGame() {
   };
 
   const confirmPurchase = async () => {
-    if (!currentUser) return;
+    if (!currentUser || isPurchasing) return; // <-- 1. TRAVA ATIVADA AQUI
+
+    setIsPurchasing(true); // <-- 2. INICIA O BLOQUEIO DE CLIQUES
 
     if (cards.length + ticketQty > LIMITE_CARTELAS) {
       alert(`Você só pode ter no máximo ${LIMITE_CARTELAS} cartelas por rodada!`);
       setConfirmModal(false);
+      setIsPurchasing(false); // LIBERA TRAVA
       return;
     }
 
@@ -628,6 +628,7 @@ export function useBingoGame() {
       alert('Saldo insuficiente!');
       setConfirmModal(false);
       setActiveModalView('DEPOSITAR');
+      setIsPurchasing(false); // LIBERA TRAVA
       return;
     }
 
@@ -640,6 +641,7 @@ export function useBingoGame() {
       console.error("Erro ao atualizar o saldo no banco de dados:", error);
       alert("Falha ao comunicar com o servidor. A compra não foi concluída.");
       setConfirmModal(false);
+      setIsPurchasing(false); // LIBERA TRAVA
       return;
     }
 
@@ -688,6 +690,8 @@ export function useBingoGame() {
     setLastBoughtQty(ticketQty);
     setConfirmModal(false);
     setSuccessModal(true);
+
+    setIsPurchasing(false); // <-- 3. LIBERA A TRAVA COM SUCESSO NO FINAL
   };
 
   const logout = () => setCurrentUser(null);
@@ -698,6 +702,6 @@ export function useBingoGame() {
     confirmModal, setConfirmModal, successModal, setSuccessModal, lastBoughtQty,
     celebrationModal, activeModalView, setActiveModalView, historyModalOpen, setHistoryModalOpen,
     rulesModalOpen, setRulesModalOpen, matchHistory, userTransactions, setUserTransactions,
-    updateQty, setQtyDirect, handleDoarClick, confirmPurchase, logout
+    updateQty, setQtyDirect, handleDoarClick, confirmPurchase, logout, isPurchasing
   };
 }
