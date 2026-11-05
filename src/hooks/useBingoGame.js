@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, useRef } from 'react';
 import confetti from 'canvas-confetti';
 import { io } from 'socket.io-client';
 import { doc, updateDoc } from 'firebase/firestore';
-import { db } from '../firebase'; // Verifique se o caminho para o seu ficheiro firebase.js está correto
+import { db } from '../firebase'; 
 
 const socket = io('https://bingo-app-16i4.onrender.com', {
   transports: ['websocket', 'polling']
@@ -210,8 +210,6 @@ export function useBingoGame() {
             audio.currentTime = 0;
           }).catch(() => {});
         });
-
-        console.log('🔓 Canal de áudio liberado para pedras, vozes e comemorações.');
       }
       window.removeEventListener('click', unlockAudio);
       window.removeEventListener('touchstart', unlockAudio);
@@ -229,7 +227,6 @@ export function useBingoGame() {
     };
   }, []);
 
-  // SISTEMA ANTI-DUPLICAÇÃO DE CARTELAS
   const generateCard90 = useCallback((todasCartelasExistentes = []) => {
     const isCartelaRepetida = (novaCartela) => {
       const novaStr = novaCartela.sort((a, b) => a - b).join(',');
@@ -344,9 +341,10 @@ export function useBingoGame() {
         });
       }
 
-      // GERAÇÃO DE 14 BOTS COM ANTI-DUPLICAÇÃO
-      if (estado.gameState === 'DRAWING' && botsRef.current.length === 0) {
-        const numBots = 14; // AGORA SÃO 14 BOTS POR PARTIDA
+      // GERAÇÃO DOS BOTS (Se a lista estiver vazia)
+      let currentBots = botsRef.current;
+      if (estado.gameState === 'DRAWING' && currentBots.length === 0) {
+        const numBots = 14;
         const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
         const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
 
@@ -364,8 +362,46 @@ export function useBingoGame() {
           }
         });
 
+        currentBots = novasCartelasBots;
         botsRef.current = novasCartelasBots;
         setBotCards(novasCartelasBots);
+      }
+
+      // NOVO SISTEMA DE FAST-FORWARD: Corrige erro de 150 vencedores no F5 / Entrada Tardia
+      if (estado.gameState === 'DRAWING' && numerosNormalizados.length > 0 && targetRef.current === 'KUADRA' && !stagesWonRef.current.KUADRA) {
+        const allCardsToSimulate = [...cardsRef.current, ...currentBots];
+        let simTarget = 'KUADRA';
+        const simStages = { KUADRA: false, KINA: false, KENO: false };
+        const simDrawn = [];
+
+        // Simula bola a bola super rápido para descobrir se a Quadra/Quina já saíram no passado
+        for (const ball of numerosNormalizados) {
+          simDrawn.push(ball);
+          if (!simStages[simTarget]) {
+             const simSet = new Set(simDrawn);
+             const isHit = allCardsToSimulate.some(card => {
+                const rows = [
+                  card.numbers.slice(0,5),
+                  card.numbers.slice(5,10),
+                  card.numbers.slice(10,15)
+                ];
+                if (simTarget === 'KUADRA') return rows.some(r => r.filter(n => simSet.has(n)).length >= 4);
+                if (simTarget === 'KINA') return rows.some(r => r.filter(n => simSet.has(n)).length === 5);
+                return card.numbers.filter(n => simSet.has(n)).length === 15;
+             });
+
+             if (isHit) {
+                simStages[simTarget] = true;
+                if (simTarget === 'KUADRA') simTarget = 'KINA';
+                else if (simTarget === 'KINA') simTarget = 'KENO';
+             }
+          }
+        }
+        
+        stagesWonRef.current = simStages;
+        targetRef.current = simTarget;
+        setCurrentTarget(simTarget);
+        isPausedRef.current = false; // Liberta a trava caso estivesse bloqueado
       }
     };
 
@@ -425,7 +461,6 @@ export function useBingoGame() {
 
       const winnerCards = evaluated.filter(c => c.isWinner);
 
-      // TRAVA DE FASE REFORÇADA
       if (winnerCards.length > 0 && !isPausedRef.current && !stagesWonRef.current[activeTarget]) {
         isPausedRef.current = true;
         stagesWonRef.current[activeTarget] = true;
@@ -539,7 +574,7 @@ export function useBingoGame() {
     };
   }, [computeMissingForTarget, generateCard90, resetRoundStates, sorteioNum]);
 
-  const LIMITE_CARTELAS = 30; // LIMITE DE CARTELAS DO UTILIZADOR
+  const LIMITE_CARTELAS = 30;
   const updateQty = (delta) => setTicketQty(prev => Math.min(LIMITE_CARTELAS, Math.max(1, prev + delta)));
   const setQtyDirect = (val) => setTicketQty(Math.min(LIMITE_CARTELAS, val));
 
@@ -570,7 +605,6 @@ export function useBingoGame() {
 
     const newBalance = +(currentUser.balance - cost).toFixed(2);
 
-    // ATUALIZAÇÃO DO SALDO NO FIREBASE
     try {
       const userRef = doc(db, 'users', currentUser.uid);
       await updateDoc(userRef, { balance: newBalance });
