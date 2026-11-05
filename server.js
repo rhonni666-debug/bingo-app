@@ -41,17 +41,49 @@ function salvarDadosAdmin() {
 }
 // --------------------------------------
 
+const REAL_PLAYERS_POOL = [
+  'MARFM69', 'Edvardo', 'KEKEL', 'ALESANTANA72', 'EUSOUASORTE',
+  'CTCSU', 'JOAO_BR', 'LUCKY_77', 'TIZIL', 'gaviao78', 'Zilma',
+  'Lú', 'S20ATIVADO', 'TÂNIA', 'NENE1410', 'Bugdoidao', 'RENATA',
+  'Lula22', 'abertojose25@gmail.com', 'finindatarde', '244Nike',
+  'vidarasa22', 'Ronyn', 'vanessalopes','paulinhalanches',
+  'gabisantos','mariaaurora','Odetesilva','Norapacheco','eduardolopes','Creuzamaria',
+  'anabeatriz','jose-carlos','Trumpmeuovo','Geo286','anapaula64@gmail.com',
+  'Verdaodamasssa','TropadoMengao','Merendiel','gingartcapoeira','Tudo2','AndrewCocao','Redbull26',
+  'Novin7','Peixaria26','tropadomantem','esquinada19','pedroIvo55','nonato','jabingeui','Ginde10',
+  'Windows98','Penha2687','Queixotatto','linsducorte','ElderMecanico','gbsilva','biaMorenana','22737373',
+];
+
+function generateCard90(todasCartelasExistentes = []) {
+  const isCartelaRepetida = (novaCartela) => {
+    const novaStr = novaCartela.sort((a, b) => a - b).join(',');
+    return todasCartelasExistentes.some(c => c.join(',') === novaStr);
+  };
+  let nums = [];
+  let tentativas = 0;
+  do {
+    nums = [];
+    while (nums.length < 15) {
+      const r = Math.floor(Math.random() * 90) + 1;
+      if (!nums.includes(r)) nums.push(r);
+    }
+    nums.sort((a, b) => a - b);
+    tentativas++;
+  } while (isCartelaRepetida(nums) && tentativas < 100);
+  return nums;
+}
+
 let cartelasAtivasPorSorteio = {};
 
 let estadoGlobal = {
   gameState: 'WAITING',
   timeRemaining: 180,
   sorteioNum: Math.floor(100000 + Math.random() * 900000),
-  // ...
   sorteioHoraInicio: 'Sincronizando...',
   drawnNumbers: [],
   pedraAtual: null,
   totalCartelasVendidas: 0,
+  botCards: [], // NOVO: Servidor agora guarda os bots
   precoPorCartela: 0.40,
   premios: {
     kuadra: 15.00,
@@ -90,7 +122,8 @@ function resetarParaLobby() {
   estadoGlobal.timeRemaining = 180;
   estadoGlobal.drawnNumbers = [];
   estadoGlobal.pedraAtual = null;
-  estadoGlobal.sorteioNum = Math.floor(120000 + Math.random() * 900);
+  estadoGlobal.botCards = []; // Limpa os bots para a proxima rodada
+  estadoGlobal.sorteioNum = Math.floor(100000 + Math.random() * 900000);
   estadoGlobal.sorteioHoraInicio = formatTargetDateTime();
   estadoGlobal.premios.kuadra = 15.00;
   estadoGlobal.premios.kina = 15.00;
@@ -127,14 +160,34 @@ function iniciarSorteioCentral() {
   estadoGlobal.drawnNumbers = [];
   estadoGlobal.pedraAtual = null;
 
-  // INJETA O VALOR DOS BOTS NOS PRÊMIOS ASSIM QUE O JOGO COMEÇA (14 bots * 13 cartelas * 0.40)
-  const numBots = 14;
+  // GERAÇÃO DOS BOTS CENTRALIZADA NO SERVIDOR
+  const numBots = 18;
   const cartelasPorBot = 16;
-  const precoCartela = 0.40;
-  const valorGastoBots = numBots * cartelasPorBot * precoCartela;
+  const precoCartelaBot = 0.15; 
+  const valorGastoBots = numBots * cartelasPorBot * precoCartelaBot;
+
+  let novasCartelasBots = [];
+  let botBaseId = Math.floor(100 + Math.random() * 2000);
+  const nomesEmbaralhados = [...REAL_PLAYERS_POOL].sort(() => 0.5 - Math.random());
+  const botsEscolhidos = nomesEmbaralhados.slice(0, numBots);
+  
+  let allBotArrays = [];
+  botsEscolhidos.forEach(nomeBot => {
+    for (let i = 0; i < cartelasPorBot; i++) {
+      const cartela = generateCard90(allBotArrays);
+      allBotArrays.push(cartela); // Guarda para nao repetir entre bots
+      novasCartelasBots.push({
+        id: botBaseId++,
+        player: nomeBot,
+        numbers: cartela
+      });
+    }
+  });
+  
+  estadoGlobal.botCards = novasCartelasBots; // Guarda no estado global para enviar a todos
 
   if (valorGastoBots > 0) {
-    estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGastoBots * 0.25)).toFixed(2);
+    estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGastoBots * 0.30)).toFixed(2);
     estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGastoBots * 0.075)).toFixed(2);
     estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGastoBots * 0.075)).toFixed(2);
     estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGastoBots * 0.04)).toFixed(2);
@@ -346,9 +399,8 @@ io.on('connection', (socket) => {
       cartelasAtivasPorSorteio[sorteioNum][uid].push(...newCards);
     }
 
-    // ARREDONDA A COMPRA DO JOGADOR PARA EVITAR BUGS NA INTERFACE
     if (valorGasto > 0) {
-      estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGasto * 0.25)).toFixed(2);
+      estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGasto * 0.30)).toFixed(2);
       estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGasto * 0.075)).toFixed(2);
       estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGasto * 0.075)).toFixed(2);
       estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGasto * 0.04)).toFixed(2);
