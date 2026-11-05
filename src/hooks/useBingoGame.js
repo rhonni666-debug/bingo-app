@@ -19,6 +19,9 @@ const REAL_PLAYERS_POOL = [
   'Verdaodamasssa','TropadoMengao','Merendiel','gingartcapoeira','Tudo2','AndrewCocao','Redbull26',
   'Novin7','Peixaria26','tropadomantem','esquinada19','pedroIvo55','nonato','jabingeui','Ginde10',
 'Windows98','Penha2687','Queixotatto','linsducorte','ElderMecanico','gbsilva','biaMorenana','22737373',
+'SimasTurbo','leleodosvenenos','joelma36','lucianopretin','Opretinho','Obingodasorte','marisaporto','rosilda13',
+'edileusa','bcmaster','fazueli','rosimarigraça1971@hotmail.com','victorgasparello@outlook.com','samucaBatera',
+'LUPIN22','1KGRIMA',
 ];
 
 const globalAudio = new Audio();
