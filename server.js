@@ -134,10 +134,10 @@ function iniciarSorteioCentral() {
   const valorGastoBots = numBots * cartelasPorBot * precoCartela;
 
   if (valorGastoBots > 0) {
-    estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGastoBots * 0.40)).toFixed(2);
-    estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGastoBots * 0.15)).toFixed(2);
-    estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGastoBots * 0.15)).toFixed(2);
-    estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGastoBots * 0.05)).toFixed(2);
+    estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGastoBots * 0.30)).toFixed(2);
+    estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGastoBots * 0.075)).toFixed(2);
+    estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGastoBots * 0.075)).toFixed(2);
+    estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGastoBots * 0.04)).toFixed(2);
     estadoGlobal.totalCartelasVendidas += (numBots * cartelasPorBot);
   }
   
@@ -348,10 +348,10 @@ io.on('connection', (socket) => {
 
     // ARREDONDA A COMPRA DO JOGADOR PARA EVITAR BUGS NA INTERFACE
     if (valorGasto > 0) {
-      estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGasto * 0.40)).toFixed(2);
-      estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGasto * 0.15)).toFixed(2);
-      estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGasto * 0.15)).toFixed(2);
-      estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGasto * 0.05)).toFixed(2);
+      estadoGlobal.premios.keno = +(estadoGlobal.premios.keno + (valorGasto * 0.30)).toFixed(2);
+      estadoGlobal.premios.kuadra = +(estadoGlobal.premios.kuadra + (valorGasto * 0.075)).toFixed(2);
+      estadoGlobal.premios.kina = +(estadoGlobal.premios.kina + (valorGasto * 0.075)).toFixed(2);
+      estadoGlobal.premios.acumulado = +(estadoGlobal.premios.acumulado + (valorGasto * 0.04)).toFixed(2);
       estadoGlobal.totalCartelasVendidas += quantidade;
 
       io.emit('estado-jogo', estadoGlobal);
